@@ -1,8 +1,10 @@
 import requests
+import json
 
 NOTION_TOKEN = "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"
 DATABASE_ID = "1144d9b143a9800180f9d91c8934c2cb"  # Data Input for QOL Calculation
 DATABASE_2_ID = "0f0518e910de4ca8bf0bf67ddebeefe1"  # Awake Minutes
+DATABASE_3_ID = "112ce1b0de0c421cbe3fe424dd729799" # 4.1 Database (Efficiency)
 
 headers = {
     "Authorization": "Bearer " + NOTION_TOKEN,
@@ -26,9 +28,6 @@ def get_pages(database_id):
     return results
 
 # Extract values from the Awake Minutes database
-# entry_number = value of "Name" property" of interest
-    # ex. "145" (a.k.a entry # 145)
-    # data_type is string
 def extract_awake_minutes_values(pages, entry_number):
     wake_times = []
     sleep_times = []
@@ -62,17 +61,42 @@ def extract_qol_values(pages, entry_number):
                 went_outside_values.append(went_outside_property["name"])
     return exercise_values, went_outside_values
 
-# Get pages from both databases
+# Extract values from the Efficiency database
+def extract_efficiency_values(pages, entry_number):
+    efficiency_values = []
+    for page in pages:
+        properties = page["properties"]
+        name_property = properties["Name"]["title"]
+        if name_property and name_property[0]["plain_text"] == entry_number:
+            efficiency_property = properties["Efficiency"]["formula"]
+            if efficiency_property is not None:
+                efficiency_values.append(efficiency_property["string"])
+    return efficiency_values
+
+# Print the properties of the first page from Database 3
+'''
+def print_first_page_properties(pages):
+    if pages:
+        first_page = pages[0]
+        properties = first_page["properties"]
+        print(json.dumps(properties, indent=4))
+'''
+
+# Get pages from all databases
 awake_minutes_pages = get_pages(DATABASE_2_ID)
 qol_pages = get_pages(DATABASE_ID)
+efficiency_pages = get_pages(DATABASE_3_ID)
 
 # Extract values
 wake_times, sleep_times = extract_awake_minutes_values(awake_minutes_pages, entry_number)
 exercise_values, went_outside_values = extract_qol_values(qol_pages, entry_number)
+efficiency_values = extract_efficiency_values(efficiency_pages, entry_number)
+
+# Print the properties of the first page from Database 3
+# print_first_page_properties(efficiency_pages)
 
 print("Wake Times:", wake_times)
 print("Sleep Times:", sleep_times)
 print("Exercise Values:", exercise_values)
 print("Went Outside Values:", went_outside_values)
-
-
+print("Efficiency Values:", efficiency_values)
