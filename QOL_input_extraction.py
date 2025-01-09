@@ -1,5 +1,8 @@
+#!/usr/bin/env python3
+
 import requests
 import json
+import sys
 
 NOTION_TOKEN = "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"
 DATABASE_ID = "1144d9b143a9800180f9d91c8934c2cb"  # Data Input for QOL Calculation
@@ -13,6 +16,7 @@ headers = {
 }
 
 # entry number of interest
+# entry_number = str(sys.argv[1])
 entry_number = "145"
 
 # Query the database
@@ -102,14 +106,35 @@ efficiency_values = extract_efficiency_values(efficiency_pages, entry_number)
 # Print the properties of the first page from Database 3
 #print_first_page_properties(qol_pages)
 
+all_values = {
+    "Wake Times": wake_times,
+    "Sleep Times": sleep_times,
+    "Exercise Values": exercise_values,
+    "Went Outside Values": went_outside_values,
+    "Talk to Someone Values": talk_to_someone_values,
+    "Min. on Social Media Values": min_on_social_media_values,
+    "Efficiency": efficiency_values[0]
+}
 
-print("Wake Times:", wake_times)
-print("Sleep Times:", sleep_times)
-print("Exercise Values:", exercise_values)
-print("Went Outside Values:", went_outside_values)
-print("Talk to Someone Values", talk_to_someone_values)
-print("Min. on Social Media Values", min_on_social_media_values)
-print("Efficiency Values:", efficiency_values)
+json_string = json.dumps(all_values, indent=4)
+print(json_string)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
