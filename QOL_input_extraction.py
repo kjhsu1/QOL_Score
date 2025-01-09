@@ -16,8 +16,8 @@ headers = {
 }
 
 # entry number of interest
-# entry_number = str(sys.argv[1])
-entry_number = "145"
+entry_number = str(sys.argv[1])
+# entry_number = "145"
 
 # Query the database
 def get_pages(database_id):

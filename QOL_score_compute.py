@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 # pipe QOL_input_extraction.py output into this program
 
 import json
