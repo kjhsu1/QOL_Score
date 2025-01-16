@@ -23,13 +23,16 @@ exercise = data["Exercise Values"][0]
 outside = data["Went Outside Values"][0]
 talk = data["Talk to Someone Values"][0]
 social_media = int(data["Min. on Social Media Values"][0])
-eff = float(data["Efficiency"][0])
+eff = float(data["Efficiency"])
+
 
 score = 100
 
 # Healthy Day or Productive Day
 if eff <= 0.6:  # healthy day
     # Calculate wake_time penalty
+    print("healthy day")
+
     wake_hour, wake_minute = map(int, wake_time.split(':'))
     wake_minutes_off = abs((wake_hour * 60 + wake_minute) - (8 * 60 + 30))
     score -= wake_minutes_off
@@ -62,24 +65,39 @@ if eff <= 0.6:  # healthy day
         score = 0
 else:
     # Calculate wake_time penalty
+    print("productive day")
     wake_hour, wake_minute = map(int, wake_time.split(':'))
     wake_minutes_off = abs((wake_hour * 60 + wake_minute) - (8 * 60 + 30))
-    score -= wake_minutes_off
+    # for every minute difference from 8:30, take off 2/10 of a point
+    score -= (wake_minutes_off * 0.2) 
+
+    print(score)
 
     # Calculate sleep_time penalty
+    # CANNOT account for next day (ie. 1:00 am the next day)
     sleep_hour, sleep_minute = map(int, sleep_time.split(':'))
     sleep_minutes_off = abs((sleep_hour * 60 + sleep_minute) - (23 * 60 + 59))
-    score -= sleep_minutes_off
+    # for every minute difference from 11:59, take off 2/10 of a point
+    score -= (sleep_minutes_off * 0.2)
+
+    print(score)
 
     # Social media penalty
     if social_media > 45:
-        score -= (social_media - 45)
+        score -= (social_media - 45) * 0.2
+        # ex. 60 min on social, 15 * 0.2 = 3 points off 
+        # ex. 120 min on social, 75 * 0.2 = 15 points off
+
+    print(score)
 
     # Efficiency penalty
+    # MAKE BETTER EFFICIENCY PENALTY
     score -= (1 - (0.8 - eff) / 0.8) * 100
 
     if score < 0:
         score = 0
+
+    print(score)
 
 # Display pop-up with QOL score
 root = Tk()
