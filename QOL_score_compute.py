@@ -35,31 +35,51 @@ if eff <= 0.6:  # healthy day
 
     wake_hour, wake_minute = map(int, wake_time.split(':'))
     wake_minutes_off = abs((wake_hour * 60 + wake_minute) - (8 * 60 + 30))
-    score -= wake_minutes_off
+    score -= (wake_minutes_off * 0.2) 
+
+    print(score)
 
     # Calculate sleep_time penalty
     sleep_hour, sleep_minute = map(int, sleep_time.split(':'))
     sleep_minutes_off = abs((sleep_hour * 60 + sleep_minute) - (23 * 60 + 59))
-    score -= sleep_minutes_off
+    score -= (sleep_minutes_off * 0.2)
+
+    print(score)
 
     # Exercise penalty
     if exercise == "No":
         score -= 10
 
+    print(score)
+
     # Outside penalty
     if outside == "No":
         score -= 10
+
+    print(score)
 
     # Talk penalty
     if talk == "No":
         score -= 10
 
+    print(score)
+
     # Social media penalty
+    # Ideal: 45 min >
     if social_media > 45:
-        score -= (social_media - 45)
+        score -= (social_media - 45) * 0.2
+        # ex. 60 min on social, 15 * 0.2 = 3 points off 
+        # ex. 120 min on social, 75 * 0.2 = 15 points off
+
+    print(score)
 
     # Efficiency penalty
-    score -= (1 - (0.6 - eff) / 0.6) * 100
+    if eff < 0.6:
+        eff_diff = 0.6 - eff
+        # for every 10% away from 60% efficiency, take away 10 points
+        score -= (eff_diff/0.1) * 10 
+
+    print(score)
 
     if score < 0:
         score = 0
@@ -92,7 +112,10 @@ else:
 
     # Efficiency penalty
     # MAKE BETTER EFFICIENCY PENALTY
-    score -= (1 - (0.8 - eff) / 0.8) * 100
+    if eff < 0.8:
+        eff_diff = 0.8 - eff
+        # for every 10% away from 80% efficiency, take away 15 points
+        score -= (eff_diff/0.1) * 15 
 
     if score < 0:
         score = 0
