@@ -98,9 +98,12 @@ def calculate_qol_score(data):
     return score
 
 # Function to display QOL score and streak with a background image and custom font
-def display_qol_score(score, good_streak):
+def display_qol_score(score, good_streak, bad_streak):
     root = tk.Tk()
     root.title("QOL Score")
+
+    # Set window size to be larger
+    root.geometry("800x600")
 
     # Set background image (ensure the correct path to your background image)
     background_image_path = "/Users/kentahsu/Code/Personal/QOL_Score/boyyaky.jpg"
@@ -121,13 +124,17 @@ def display_qol_score(score, good_streak):
     qol_score_label = tk.Label(root, text=f"QOL Score: {score}", font=custom_font, bg="white", fg="black")
     qol_score_label.pack(pady=20)
 
-    # Streak Label
-    streak_label = tk.Label(root, text=f"Good Streak: {good_streak}", font=custom_font, bg="white", fg="black")
-    streak_label.pack(pady=20)
+    # Good Streak Label
+    good_streak_label = tk.Label(root, text=f"Good Streak: {good_streak}", font=custom_font, bg="white", fg="black")
+    good_streak_label.pack(pady=10)
+
+    # Bad Streak Label
+    bad_streak_label = tk.Label(root, text=f"Bad Streak: {bad_streak}", font=custom_font, bg="white", fg="black")
+    bad_streak_label.pack(pady=10)
 
     root.mainloop()
 
-# Main function to read JSON data and calculate/display QOL score and streak
+# Main function to read JSON data and calculate/display QOL score and streaks
 def main():
     input_json = sys.stdin.read()
     
@@ -178,7 +185,7 @@ def main():
         with open(streak_file, 'w') as file:
             json.dump(streaks, file, indent=4)
 
-    display_qol_score(score, streaks['good_streak'])
+    display_qol_score(score, streaks['good_streak'], streaks['bad_streak'])
 
 if __name__ == "__main__":
     main()
