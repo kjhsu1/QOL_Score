@@ -1,165 +1,184 @@
 #!/usr/bin/env python3
 
-# pipe QOL_input_extraction.py output into this program
-
 import json
 import sys
 import os
-from datetime import datetime
-from tkinter import Tk, messagebox
+from datetime import datetime, timedelta
+import tkinter as tk
+from tkinter import messagebox
+from PIL import Image, ImageTk
 
-# Read JSON data from stdin
-input_json = sys.stdin.read()
-data = json.loads(input_json)
+# Function to calculate QOL score
+def calculate_qol_score(data):
+    wake_time = data["Wake Times"][0]
+    sleep_time = data["Sleep Times"][0]
 
-# Extract data
-wake_time = data["Wake Times"][0]
-wake_time = wake_time[wake_time.find("T")+1:wake_time.find("T")+6]
+    exercise = data["Exercise Values"][0]
+    outside = data["Went Outside Values"][0]
+    talk = data["Talk to Someone Values"][0]
+    social_media = int(data["Min. on Social Media Values"][0])
+    eff = float(data["Efficiency"])
 
-sleep_time = data["Sleep Times"][0]
-sleep_time = sleep_time[sleep_time.find("T")+1:sleep_time.find("T")+6]
+    score = 100
 
-exercise = data["Exercise Values"][0]
-outside = data["Went Outside Values"][0]
-talk = data["Talk to Someone Values"][0]
-social_media = int(data["Min. on Social Media Values"][0])
-eff = float(data["Efficiency"])
+    # Extract time from datetime string
+    wake_time = wake_time.split('T')[1][:5]
+    sleep_time = sleep_time.split('T')[1][:5]
 
-
-score = 100
-
-# Healthy Day or Productive Day
-if eff <= 0.6:  # healthy day
-    # Calculate wake_time penalty
-    print("healthy day")
-
-    wake_hour, wake_minute = map(int, wake_time.split(':'))
-    wake_minutes_off = abs((wake_hour * 60 + wake_minute) - (8 * 60 + 30))
-    score -= (wake_minutes_off * 0.2) 
-
-    print(score)
-
-    # Calculate sleep_time penalty
-    sleep_hour, sleep_minute = map(int, sleep_time.split(':'))
-    sleep_minutes_off = abs((sleep_hour * 60 + sleep_minute) - (23 * 60 + 59))
-    score -= (sleep_minutes_off * 0.2)
-
-    print(score)
-
-    # Exercise penalty
-    if exercise == "No":
-        score -= 10
-
-    print(score)
-
-    # Outside penalty
-    if outside == "No":
-        score -= 10
-
-    print(score)
-
-    # Talk penalty
-    if talk == "No":
-        score -= 10
-
-    print(score)
-
-    # Social media penalty
-    # Ideal: 45 min >
-    if social_media > 45:
-        score -= (social_media - 45) * 0.2
-        # ex. 60 min on social, 15 * 0.2 = 3 points off 
-        # ex. 120 min on social, 75 * 0.2 = 15 points off
-
-    print(score)
-
-    # Efficiency penalty
-    if eff < 0.6:
-        eff_diff = 0.6 - eff
-        # for every 10% away from 60% efficiency, take away 10 points
-        score -= (eff_diff/0.1) * 10 
-
-    print(score)
-
-    if score < 0:
-        score = 0
-else:
-    # Calculate wake_time penalty
-    print("productive day")
-    wake_hour, wake_minute = map(int, wake_time.split(':'))
-    wake_minutes_off = abs((wake_hour * 60 + wake_minute) - (8 * 60 + 30))
-    # for every minute difference from 8:30, take off 2/10 of a point
-    score -= (wake_minutes_off * 0.2) 
-
-    print(score)
-
-    # Calculate sleep_time penalty
-    # CANNOT account for next day (ie. 1:00 am the next day)
-    sleep_hour, sleep_minute = map(int, sleep_time.split(':'))
-    sleep_minutes_off = abs((sleep_hour * 60 + sleep_minute) - (23 * 60 + 59))
-    # for every minute difference from 11:59, take off 2/10 of a point
-    score -= (sleep_minutes_off * 0.2)
-
-    print(score)
-
-    # Social media penalty
-    if social_media > 45:
-        score -= (social_media - 45) * 0.2
-        # ex. 60 min on social, 15 * 0.2 = 3 points off 
-        # ex. 120 min on social, 75 * 0.2 = 15 points off
-
-    print(score)
-
-    # Efficiency penalty
-    # MAKE BETTER EFFICIENCY PENALTY
-    if eff < 0.8:
-        eff_diff = 0.8 - eff
-        # for every 10% away from 80% efficiency, take away 15 points
-        score -= (eff_diff/0.1) * 15 
-
-    if score < 0:
-        score = 0
-
-    print(score)
-
-# Display pop-up with QOL score
-root = Tk()
-root.withdraw()
-messagebox.showinfo("QOL Score", f"Your QOL Score is: {score}")
-
-# Track streaks
-streak_file = "streaks.json"
-
-# Initialize streaks data
-if not os.path.exists(streak_file):
-    streaks = {"good_streak": 0, "bad_streak": 0, "last_score": None}
-else:
-    with open(streak_file, 'r') as file:
-        streaks = json.load(file)
-
-# Update streaks
-if score >= 80:
-    if streaks["last_score"] is not None and streaks["last_score"] >= 80:
-        streaks["good_streak"] += 1
+    # Convert times to datetime objects for easier manipulation
+    wake_time_dt = datetime.strptime(wake_time, "%H:%M")
+    
+    # Check if sleep_time is empty and handle it
+    if sleep_time:
+        sleep_time_dt = datetime.strptime(sleep_time, "%H:%M")
+        # Adjust for next day sleep times
+        if sleep_time_dt < wake_time_dt:
+            sleep_time_dt += timedelta(days=1)
     else:
-        streaks["good_streak"] = 1
-    streaks["bad_streak"] = 0
-else:
-    if streaks["last_score"] is not None and streaks["last_score"] < 80:
-        streaks["bad_streak"] += 1
+        sleep_time_dt = wake_time_dt + timedelta(hours=8)  # Default to 8 hours after wake time
+
+    # Healthy Day or Productive Day
+    if eff <= 0.6:  # healthy day
+        print("healthy day")
+
+        # Calculate wake_time penalty
+        wake_minutes_off = abs((wake_time_dt - datetime.strptime("08:30", "%H:%M")).total_seconds() / 60)
+        score -= (wake_minutes_off * 0.2)
+
+        # Calculate sleep_time penalty
+        sleep_minutes_off = abs((sleep_time_dt - datetime.strptime("23:59", "%H:%M")).total_seconds() / 60)
+        score -= (sleep_minutes_off * 0.2)
+
+        # Exercise penalty
+        if exercise == "No":
+            score -= 10
+
+        # Outside penalty
+        if outside == "No":
+            score -= 10
+
+        # Talk penalty
+        if talk == "No":
+            score -= 10
+
+        # Social media penalty
+        if social_media > 45:
+            score -= (social_media - 45) * 0.2
+
+        # Efficiency penalty
+        if eff < 0.6:
+            eff_diff = 0.6 - eff
+            score -= (eff_diff / 0.1) * 10
+
+        if score < 0:
+            score = 0
     else:
-        streaks["bad_streak"] = 1
-    streaks["good_streak"] = 0
+        print("productive day")
 
-streaks["last_score"] = score
+        # Calculate wake_time penalty
+        wake_minutes_off = abs((wake_time_dt - datetime.strptime("08:30", "%H:%M")).total_seconds() / 60)
+        score -= (wake_minutes_off * 0.2)
 
-# Save streaks data
-with open(streak_file, 'w') as file:
-    json.dump(streaks, file, indent=4)
+        # Calculate sleep_time penalty
+        sleep_minutes_off = abs((sleep_time_dt - datetime.strptime("23:59", "%H:%M")).total_seconds() / 60)
+        score -= (sleep_minutes_off * 0.2)
 
-# Display streaks
-messagebox.showinfo("Streaks", f"Good Streak: {streaks['good_streak']}")
+        # Social media penalty
+        if social_media > 45:
+            score -= (social_media - 45) * 0.2
 
+        # Efficiency penalty
+        if eff < 0.8:
+            eff_diff = 0.8 - eff
+            score -= (eff_diff / 0.1) * 15
 
+        if score < 0:
+            score = 0
 
+    return score
 
+# Function to display QOL score and streak with a background image and custom font
+def display_qol_score(score, good_streak):
+    root = tk.Tk()
+    root.title("QOL Score")
+
+    # Set background image (ensure the correct path to your background image)
+    background_image_path = "/Users/kentahsu/Code/Personal/QOL_Score/boyyaky.jpg"
+    
+    if not os.path.exists(background_image_path):
+        print(f"Background image not found: {background_image_path}")
+        return
+    
+    background_image = Image.open(background_image_path)
+    background_photo = ImageTk.PhotoImage(background_image)
+    background_label = tk.Label(root, image=background_photo)
+    background_label.place(relwidth=1, relheight=1)
+
+    # Custom font (ensure the font file is in the same directory or provide the full path)
+    custom_font = ("Comic Sans MS", 24, "bold")
+
+    # QOL Score Label
+    qol_score_label = tk.Label(root, text=f"QOL Score: {score}", font=custom_font, bg="white", fg="black")
+    qol_score_label.pack(pady=20)
+
+    # Streak Label
+    streak_label = tk.Label(root, text=f"Good Streak: {good_streak}", font=custom_font, bg="white", fg="black")
+    streak_label.pack(pady=20)
+
+    root.mainloop()
+
+# Main function to read JSON data and calculate/display QOL score and streak
+def main():
+    input_json = sys.stdin.read()
+    
+    if not input_json.strip():
+        print("No input data provided.")
+        return
+    
+    data = json.loads(input_json)
+
+    score = calculate_qol_score(data)
+
+    # Track streaks
+    streak_file = "streaks.json"
+
+    # Initialize streaks data
+    if not os.path.exists(streak_file):
+        streaks = {"good_streak": 0, "bad_streak": 0, "last_score": None, "last_update": ""}
+    else:
+        with open(streak_file, 'r') as file:
+            streaks = json.load(file)
+
+    today_date_str = datetime.now().strftime("%Y-%m-%d")
+
+    # Ensure 'last_update' key exists in streaks dictionary to avoid KeyError
+    if 'last_update' not in streaks:
+        streaks['last_update'] = ""
+
+    # Check if the streaks were updated today
+    if streaks["last_update"] != today_date_str:
+        # Update streaks only if they were not updated today
+        if score >= 80:
+            if streaks["last_score"] is not None and streaks["last_score"] >= 80:
+                streaks["good_streak"] += 1
+            else:
+                streaks["good_streak"] = 1
+            streaks["bad_streak"] = 0
+        else:
+            if streaks["last_score"] is not None and streaks["last_score"] < 80:
+                streaks["bad_streak"] += 1
+            else:
+                streaks["bad_streak"] = 1
+            streaks["good_streak"] = 0
+
+        streaks["last_score"] = score
+        streaks["last_update"] = today_date_str
+
+        # Save streaks data only if updated today
+        with open(streak_file, 'w') as file:
+            json.dump(streaks, file, indent=4)
+
+    display_qol_score(score, streaks['good_streak'])
+
+if __name__ == "__main__":
+    main()
