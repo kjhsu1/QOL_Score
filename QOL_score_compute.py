@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
+import random
 
 # Function to calculate QOL score
 def calculate_qol_score(data):
@@ -131,6 +132,31 @@ def display_qol_score(score, good_streak, bad_streak):
     # Bad Streak Label
     bad_streak_label = tk.Label(root, text=f"Bad Streak: {bad_streak}", font=custom_font, bg="white", fg="black")
     bad_streak_label.pack(pady=10)
+
+    # Messages based on streaks
+    good_streak_messages = [
+        "You just a chill guy like that. Keep at it my friend.",
+        "君の未来は明るい",
+        "そなたは美しい"
+    ]
+
+    bad_streak_messages = [
+        "ggs my friend, on to the next",
+        "my guy, tomorrow's gonna be a better day.",
+        "オワコンやんけ"
+    ]
+
+    if bad_streak > good_streak:
+        message_text = random.choice(bad_streak_messages)
+        
+        message_label = tk.Label(root, text=message_text, font=("Comic Sans MS", 24, "bold"), bg="white", fg="red")
+        message_label.pack(pady=20)
+        
+    else:
+        message_text = random.choice(good_streak_messages)
+        
+        message_label = tk.Label(root, text=message_text, font=("Comic Sans MS", 24, "bold"), bg="white", fg="black")
+        message_label.pack(pady=20)
 
     root.mainloop()
 
