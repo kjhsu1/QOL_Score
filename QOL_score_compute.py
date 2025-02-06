@@ -13,6 +13,8 @@ import random
 def calculate_qol_score(data):
     wake_time = data["Wake Times"][0]
     sleep_time = data["Sleep Times"][0]
+    print(wake_time)
+    print(sleep_time)
 
     exercise = data["Exercise Values"][0]
     outside = data["Went Outside Values"][0]
@@ -23,15 +25,11 @@ def calculate_qol_score(data):
     score = 100
 
     # Extract time from datetime string
-    wake_time = wake_time.split('T')[1][:5]
-    sleep_time = sleep_time.split('T')[1][:5]
-
-    # Convert times to datetime objects for easier manipulation
-    wake_time_dt = datetime.strptime(wake_time, "%H:%M")
+    wake_time_dt = datetime.strptime(wake_time, "%Y-%m-%dT%H:%M:%S.%f%z")
     
     # Check if sleep_time is empty and handle it
     if sleep_time:
-        sleep_time_dt = datetime.strptime(sleep_time, "%H:%M")
+        sleep_time_dt = datetime.strptime(sleep_time, "%Y-%m-%dT%H:%M:%S.%f%z")
         # Adjust for next day sleep times
         if sleep_time_dt < wake_time_dt:
             sleep_time_dt += timedelta(days=1)
@@ -43,12 +41,12 @@ def calculate_qol_score(data):
         print("healthy day")
 
         # Calculate wake_time penalty
-        wake_minutes_off = abs((wake_time_dt - datetime.strptime("08:30", "%H:%M")).total_seconds() / 60)
-        score -= (wake_minutes_off * 0.2)
+        wake_minutes_off = abs((wake_time_dt - datetime.strptime("08:30", "%H:%M").replace(tzinfo=wake_time_dt.tzinfo)).total_seconds() / 60)
+        score -= min(wake_minutes_off * 0.2, 15)
 
         # Calculate sleep_time penalty
-        sleep_minutes_off = abs((sleep_time_dt - datetime.strptime("23:59", "%H:%M")).total_seconds() / 60)
-        score -= (sleep_minutes_off * 0.2)
+        sleep_minutes_off = abs((sleep_time_dt - datetime.strptime("23:59", "%H:%M").replace(tzinfo=sleep_time_dt.tzinfo)).total_seconds() / 60)
+        score -= min(sleep_minutes_off * 0.2, 15)
 
         # Exercise penalty
         if exercise == "No":
@@ -77,12 +75,12 @@ def calculate_qol_score(data):
         print("productive day")
 
         # Calculate wake_time penalty
-        wake_minutes_off = abs((wake_time_dt - datetime.strptime("08:30", "%H:%M")).total_seconds() / 60)
-        score -= (wake_minutes_off * 0.2)
+        wake_minutes_off = abs((wake_time_dt - datetime.strptime("08:30", "%H:%M").replace(tzinfo=wake_time_dt.tzinfo)).total_seconds() / 60)
+        score -= min(wake_minutes_off * 0.2, 15)
 
         # Calculate sleep_time penalty
-        sleep_minutes_off = abs((sleep_time_dt - datetime.strptime("23:59", "%H:%M")).total_seconds() / 60)
-        score -= (sleep_minutes_off * 0.2)
+        sleep_minutes_off = abs((sleep_time_dt - datetime.strptime("23:59", "%H:%M").replace(tzinfo=sleep_time_dt.tzinfo)).total_seconds() / 60)
+        score -= min(sleep_minutes_off * 0.2, 15)
 
         # Social media penalty
         if social_media > 45:
