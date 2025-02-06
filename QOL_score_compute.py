@@ -13,8 +13,6 @@ import random
 def calculate_qol_score(data):
     wake_time = data["Wake Times"][0]
     sleep_time = data["Sleep Times"][0]
-    print(wake_time)
-    print(sleep_time)
 
     exercise = data["Exercise Values"][0]
     outside = data["Went Outside Values"][0]

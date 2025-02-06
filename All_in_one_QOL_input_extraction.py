@@ -4,10 +4,8 @@ import requests
 import json
 import sys
 
-NOTION_TOKEN = "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"
-DATABASE_ID = "1144d9b143a9800180f9d91c8934c2cb"  # Data Input for QOL Calculation
-DATABASE_2_ID = "0f0518e910de4ca8bf0bf67ddebeefe1"  # Awake Minutes
-DATABASE_3_ID = "112ce1b0de0c421cbe3fe424dd729799" # 4.1 Database (Efficiency)
+NOTION_TOKEN = "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"
+DATABASE_ID = "1924d9b143a980719cabc4f151bc30fb"  
 
 headers = {
     "Authorization": "Bearer " + NOTION_TOKEN,
@@ -55,6 +53,7 @@ def extract_qol_values(pages, entry_number):
     went_outside_values = []
     talk_to_someone_values = []
     min_on_social_media_values = []
+    offday_special_day_values = []
     for page in pages:
         properties = page["properties"]
         name_property = properties["Name"]["title"]
@@ -63,13 +62,15 @@ def extract_qol_values(pages, entry_number):
             went_outside_property = properties["Went Outside?"]["select"]
             talk_to_someone_property = properties["Talk to Someone?"]["select"]["name"]
             min_on_social_media_property = properties["Min. on Social Media"]["number"]
+            offday_special_day_property = properties["Offday/Special Day?"]["select"]["name"]
             if exercise_property:
                 exercise_values.append(exercise_property["name"])
             if went_outside_property:
                 went_outside_values.append(went_outside_property["name"])
             talk_to_someone_values.append(talk_to_someone_property)
             min_on_social_media_values.append(min_on_social_media_property)
-    return exercise_values, went_outside_values, talk_to_someone_values, min_on_social_media_values
+            offday_special_day_values.append(offday_special_day_property)
+    return exercise_values, went_outside_values, talk_to_someone_values, min_on_social_media_values, offday_special_day_values
 
 # Extract values from the Efficiency database
 def extract_efficiency_values(pages, entry_number):
@@ -80,28 +81,27 @@ def extract_efficiency_values(pages, entry_number):
         if name_property and name_property[0]["plain_text"] == entry_number:
             efficiency_property = properties["Efficiency"]["formula"]
             if efficiency_property is not None:
-                efficiency_values.append(efficiency_property["string"])
+                efficiency_values.append(efficiency_property["number"])
     return efficiency_values
 
 # Print the properties of the first page from Database 3
-
-'''
+# use this function to see structure of JSON
 def print_first_page_properties(pages):
     if pages:
         first_page = pages[0]
         properties = first_page["properties"]
         print(json.dumps(properties, indent=4))
-'''
 
-# Get pages from all databases
-awake_minutes_pages = get_pages(DATABASE_2_ID)
-qol_pages = get_pages(DATABASE_ID)
-efficiency_pages = get_pages(DATABASE_3_ID)
+
+# Get pages from all in one database
+all_in_one_pages = get_pages(DATABASE_ID)
+
+# print_first_page_properties(all_in_one_pages) # testing
 
 # Extract values
-wake_times, sleep_times = extract_awake_minutes_values(awake_minutes_pages, entry_number)
-exercise_values, went_outside_values, talk_to_someone_values, min_on_social_media_values = extract_qol_values(qol_pages, entry_number)
-efficiency_values = extract_efficiency_values(efficiency_pages, entry_number)
+wake_times, sleep_times = extract_awake_minutes_values(all_in_one_pages, entry_number)
+exercise_values, went_outside_values, talk_to_someone_values, min_on_social_media_values, offday_special_day_values = extract_qol_values(all_in_one_pages, entry_number)
+efficiency_values = extract_efficiency_values(all_in_one_pages, entry_number)
 
 # Print the properties of the first page from Database 3
 #print_first_page_properties(qol_pages)
@@ -113,7 +113,8 @@ all_values = {
     "Went Outside Values": went_outside_values,
     "Talk to Someone Values": talk_to_someone_values,
     "Min. on Social Media Values": min_on_social_media_values,
-    "Efficiency": efficiency_values[0]
+    "Efficiency": efficiency_values,
+    "Offday/Special Day?": offday_special_day_values
 }
 
 json_string = json.dumps(all_values, indent=4)
