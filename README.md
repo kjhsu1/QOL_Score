@@ -7,16 +7,13 @@ How to Use
 
 1. Get Notion, then
 	- Copy below page into your Notion
-		- https://intriguing-macaroni-6ea.notion.site/Data-Input-for-QOL-Score-3aad05e95cb148e4b659999a6d5202ec
+		- https://www.notion.so/1924d9b143a980719cabc4f151bc30fb?v=1924d9b143a980dfb2ab000c90213282&pvs=4
 2. Create a Notion Integration 
 	- use this link https://www.notion.so/profile/integrations
-3. Add the all databases on the page to the integration
+3. Add the database to the integration
 4. Go into terminal, run, ```git clone https://github.com/kjhsu1/QOL_Score.git```
 5. Open run_this_everyday.sh, change path to the directory on your computer
 	- ex. "Users/name/Downloads/QOL_Score"
-6. Open QOL_input_extraction.py with ```open QOL_input_extraction.py```
-	- change NOTION_TOKEN, DATABASE_ID, DATABASE2_ID, DATABASE3_ID appropriately to your specific integration and database
+6. Open QOL_input_extraction.py and UI.py and change NOTION_TOKEN and DATABASE_ID
 
-When you run it everyday
-- Fill out the Notion template daily ()
-- Make sure to go into run_this_everyday.sh and change the entry number appropriately to the specific day
+
