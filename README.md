@@ -16,8 +16,3 @@ How to Use
 	- ex. "Users/name/Downloads/QOL_Score"
 6. Open QOL_input_extraction.py and UI.py and change NOTION_TOKEN and DATABASE_ID
 
-When Running Everday
-1. On Mac, go to Applications to open the Automater app.
-2. Automate running UI.py and have it on your desktop so you just need to click on it everyday
-
-
