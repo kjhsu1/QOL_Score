@@ -1,0 +1,8 @@
+name: QOL_env
+channels:
+  - defaults
+dependencies:
+  - python=3.8
+  - requests
+  - pytz
+  - pillow  # For PIL (Pillow is the fork of PIL)

@@ -117,7 +117,7 @@ def display_qol_score(score, good_streak, bad_streak):
 
     # Set background image (ensure the correct path to your background image)
     username = os.getenv('USER') # get username (ex. /Users/kentahsu)
-    background_image_path = f"/Users/{username}/Code/Personal/QOL_Score/boyyaky.jpg"
+    background_image_path = f"/Users/{username}/Downloads/QOL_Score/For_new_users/boyyaky.jpg"
     
     if not os.path.exists(background_image_path):
         print(f"Background image not found: {background_image_path}")
@@ -183,7 +183,8 @@ def main():
     score = calculate_qol_score(data)
 
     # Track streaks
-    streak_file = "/Users/kentahsu/Code/Personal/QOL_Score/streaks.json"
+    username = os.getenv('USER') # get username (ex. /Users/kentahsu)
+    streak_file = f"/Users/{username}/Downloads/QOL_Score/For_new_users/streaks.json"
 
     # Initialize streaks data
     if not os.path.exists(streak_file):
