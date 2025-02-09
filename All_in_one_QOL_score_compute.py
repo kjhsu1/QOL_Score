@@ -182,7 +182,7 @@ def main():
     score = calculate_qol_score(data)
 
     # Track streaks
-    streak_file = "streaks.json"
+    streak_file = "/Users/kentahsu/Code/Personal/QOL_Score/streaks.json"
 
     # Initialize streaks data
     if not os.path.exists(streak_file):

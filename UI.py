@@ -7,6 +7,7 @@ from tkinter import messagebox
 from datetime import datetime
 import pytz
 import os
+import threading
 import subprocess
 
 NOTION_TOKEN = "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"
@@ -18,6 +19,8 @@ headers = {
     "Notion-Version": "2022-06-28",
 }
 
+# get highest entry number so user doesn't need to know what last entry
+# number was
 def get_highest_entry_number():
     url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
     response = requests.post(url, headers=headers)
@@ -40,6 +43,8 @@ def to_pst_isoformat(date_str):
     local_time = pst.localize(local_time)
     return local_time.isoformat()
 
+# tries to update notion database
+# returns whether it was success or not
 def update_notion_database(data):
     url = f"https://api.notion.com/v1/pages"
     payload = {
@@ -89,7 +94,7 @@ def submit_data():
     }
 
     if all(data.values()):
-        if update_notion_database(data):
+        if update_notion_database(data): # if update was success...
             messagebox.showinfo("Success", "Data updated successfully!")
             calculate_and_display_qol_score(data["entry_number"])
         else:
@@ -98,8 +103,18 @@ def submit_data():
         messagebox.showwarning("Incomplete Data", "Please fill out all fields.")
 
 def calculate_and_display_qol_score(entry_number):
-    result = subprocess.run(["python3", "All_in_one_QOL_input_extraction.py", entry_number], stdout=subprocess.PIPE, text=True)
-    subprocess.run(["python3", "All_in_one_QOL_score_compute.py"], input=result.stdout, text=True)
+    def run_subprocess():
+        try:
+            result = subprocess.run(["python3", "/Users/kentahsu/Code/Personal/QOL_Score/All_in_one_QOL_input_extraction.py", entry_number], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+            subprocess.run(["python3", "/Users/kentahsu/Code/Personal/QOL_Score/All_in_one_QOL_score_compute.py"], input=result.stdout, text=True, check=True)
+            # Update the GUI or show a message when done
+            messagebox.showinfo("Success", "QOL score calculated successfully!")
+        except subprocess.CalledProcessError as e:
+            print(f"Subprocess failed: {e.stderr}")
+            messagebox.showerror("Error", f"Subprocess failed: {e.stderr}")
+
+    thread = threading.Thread(target=run_subprocess)
+    thread.start()
 
 root = tk.Tk()
 root.title("Daily QOL Data Input")
