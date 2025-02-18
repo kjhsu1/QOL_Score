@@ -201,7 +201,7 @@ def main():
     # Check if the streaks were updated today
     if streaks["last_update"] != today_date_str:
         # Update streaks only if they were not updated today
-        if score >= 80:
+        if score >= 65:
             if streaks["last_score"] is not None and streaks["last_score"] >= 80:
                 streaks["good_streak"] += 1
             else:
