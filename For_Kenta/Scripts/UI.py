@@ -80,8 +80,8 @@ def display_qol_score(data):
     def run_subprocess():
         username = os.getenv('USER')
         try:
-            result = subprocess.run(["python3", f"/Users/kentahsu/Code/Personal/QOL_Score/All_in_one_QOL_input_extraction_kenta_version.py", entry_number_entry.get()], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-            subprocess.run(["python3", f"/Users/{username}/Code/Personal/QOL_Score/All_in_one_QOL_score_compute_kenta_version.py"], input=result.stdout, text=True, check=True)
+            result = subprocess.run(["python3", f"/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Scripts/All_in_one_QOL_input_extraction_kenta_version.py", entry_number_entry.get()], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+            subprocess.run(["python3", f"/Users/{username}/Code/Personal/QOL_Score/For_Kenta/Scripts/All_in_one_QOL_score_compute_kenta_version.py"], input=result.stdout, text=True, check=True)
 
         except subprocess.CalledProcessError as e:
             print(f"Subprocess failed: {e.stderr}")
@@ -216,12 +216,12 @@ root.geometry("1200x1200")  # Adjust the size as needed
 root.resizable(True, True)
 
 # Load pixel art background
-background_image = tk.PhotoImage(file="/Users/kentahsu/Code/Personal/QOL_Score/pixel_smile_background.png")  # Replace with your image path
+background_image = tk.PhotoImage(file="/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/pixel_smile_background.png")  # Replace with your image path
 background_label = tk.Label(root, image=background_image)
 background_label.place(relwidth=1, relheight=1)
 
 # Set retro font
-font_path = "/Users/kentahsu/Code/Personal/QOL_Score/Press_Start_2P/PressStart2P-Regular.ttf"  # Path to your .ttf file
+font_path = "/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Text_Files/Press_Start_2P/PressStart2P-Regular.ttf"  # Path to your .ttf file
 
 # Set retro font
 retro_font = tkFont.Font(family="Press Start 2P", size=15)  # Load the font using Tkinter
@@ -285,7 +285,7 @@ offday_menu.config(font=retro_font, bg="black", fg="white")
 offday_menu.grid(row=9, column=1, sticky="nsew")
 
 # Resize the submit button image
-submit_button_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/boyyaky_button.png", 100, 100)
+submit_button_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/boyyaky_button.png", 100, 100)
 submit_button = tk.Button(root, image=submit_button_image, command=update_and_display_everything, borderwidth=0)
 submit_button.grid(row=10, column=0, columnspan=2, sticky="nsew")
 

@@ -11,4 +11,4 @@ export CONDA_DEFAULT_ENV=base
 source /opt/anaconda3/bin/activate base
 
 # Run the Python script
-/opt/anaconda3/bin/python /Users/kentahsu/Code/Personal/QOL_Score/UI.py
+/opt/anaconda3/bin/python /Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Scripts/UI.py
