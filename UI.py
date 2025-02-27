@@ -5,12 +5,14 @@ import json
 import tkinter as tk
 from tkinter import messagebox, font
 import tkinter.font as tkFont
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 import os
 import threading
 import subprocess
 from PIL import Image, ImageTk
+import matplotlib.pyplot as plt
+import QOL_LIB # my homemade library 
 
 
 # For Kenta's Database
@@ -65,14 +67,102 @@ def update_notion_database(data):
             "Min. on Social Media": {"number": int(data["social_media"])},
             "Date": {"date": {"start": data["todays_date"] + "T00:00:00.000", "time_zone": "America/Los_Angeles"}},
             "Time Focused": {"number": int(data["time_focused"])},
-            "Offday/Special Day?": {"select": {"name": data["offday_special_day"]}}
+            "Offday/Special Day?": {"select": {"name": data["offday_special_day"]}},
+            "QOL Score": {"number": int(data["qol_score"])}, # NEW ADDITION
+            "Streak": {"number": int(data["streak"])} # NEW ADDITION
         }
     }
-
     response = requests.post(url, json=payload, headers=headers)
     return response.status_code == 200
 
-def submit_data():
+# try to run score_compute.py in another thread
+def display_qol_score(data):
+    def run_subprocess():
+        username = os.getenv('USER')
+        try:
+            result = subprocess.run(["python3", f"/Users/kentahsu/Code/Personal/QOL_Score/All_in_one_QOL_input_extraction_kenta_version.py", entry_number_entry.get()], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+            subprocess.run(["python3", f"/Users/{username}/Code/Personal/QOL_Score/All_in_one_QOL_score_compute_kenta_version.py"], input=result.stdout, text=True, check=True)
+
+        except subprocess.CalledProcessError as e:
+            print(f"Subprocess failed: {e.stderr}")
+            messagebox.showerror("Error", f"Subprocess failed: {e.stderr}")
+
+    thread = threading.Thread(target=run_subprocess)
+    thread.start()
+
+def resize_image(image_path, width, height):
+    image = Image.open(image_path)
+    resized_image = image.resize((width, height), Image.LANCZOS)  # Use Image.LANCZOS instead of Image.ANTIALIAS
+    return ImageTk.PhotoImage(resized_image)
+
+def fetch_past_entries(limit=14):
+    url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
+    payload = {
+        "page_size": limit,
+        "sorts": [{"property": "Date", "direction": "descending"}]
+    }
+    response = requests.post(url, headers=headers, json=payload)
+    data = response.json()
+    results = data.get("results", [])
+    
+    entries = []
+    for page in results:
+        properties = page.get("properties", {})
+        date_property = properties.get("Date", {}).get("date", {}).get("start", "")
+        score_property = properties.get("QOL Score", {}).get("number", 0)
+        if date_property and score_property:
+            entries.append((date_property, score_property))
+    return entries[::-1]  # Reverse to get chronological order
+
+def plot_qol_score():
+    entries = fetch_past_entries(limit=14)
+    if not entries:
+        messagebox.showwarning("No Data", "No QOL data available to plot.")
+        return
+    
+    dates, scores = zip(*entries)
+    formatted_dates = [datetime.fromisoformat(date).strftime('%Y-%m-%d') for date in dates]
+    
+    plt.figure(figsize=(10, 5))
+    plt.plot(formatted_dates, scores, marker='o', linestyle='-', color='b')
+    plt.xlabel('Date')
+    plt.ylabel('QOL Score')
+    plt.title('QOL Score vs. Time (Last 14 days)')
+    plt.ylim(0, 100)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
+def create_plot_button():
+    plot_button = tk.Button(root, text="Push for Graph", command=plot_qol_score, font=retro_font, bg="black", fg="white")
+    plot_button.grid(row=11, column=0, columnspan=2, sticky="nsew")
+    root.update_idletasks()  # Force update the UI'
+
+# return "Streak" prop. value in database given entry number
+def fetch_streak_by_name(entry_name):
+    url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
+    payload = {
+        "filter": {
+            "property": "Name",
+            "title": {
+                "equals": entry_name
+            }
+        }
+    }
+    response = requests.post(url, headers=headers, json=payload)
+    data = response.json()
+    results = data.get("results", [])
+    
+    if results:
+        properties = results[0].get("properties", {})
+        streak_property = properties.get("Streak", {}).get("number", None)
+        return streak_property
+    return None
+
+# gets all user input data into a single dictionary
+# also adds QOL score and streak value as well
+# returns that dictionary
+def get_values_from_user():    
     data = {
         "entry_number": entry_number_entry.get(),
         "wake_time": wake_time_entry.get(),
@@ -85,36 +175,35 @@ def submit_data():
         "time_focused": time_focused_entry.get(),
         "offday_special_day": offday_special_day_var.get()
     }
+    # add qol
+    qol_score = QOL_LIB.calculate_qol_score(data)
+    data["qol_score"] = qol_score
+    
+    # add streak
+    current_streak = 0
+    previous_streak = int(fetch_streak_by_name(str(int(data["entry_number"])-1)))
+    if data["qol_score"] > 65:
+        if previous_streak <= 0:
+            current_streak = 1
+        if previous_streak > 0:
+            current_streak = previous_streak + 1
+    data["streak"] = current_streak
 
+    return data
+
+
+# revised update_and_display_everything function
+def update_and_display_everything():
+    data = get_values_from_user()
     if all(data.values()):
         if update_notion_database(data):
             messagebox.showinfo("Success", "Data updated successfully!")
-            calculate_and_display_qol_score(data["entry_number"])
+            display_qol_score(data["entry_number"])
         else:
             messagebox.showerror("Error", "Failed to update Notion database.")
     else:
         messagebox.showwarning("Incomplete Data", "Please fill out all fields.")
 
-def calculate_and_display_qol_score(entry_number):
-    def run_subprocess():
-        username = os.getenv('USER')
-        try:
-            # debug
-            print(entry_number)
-            result = subprocess.run(["python3", f"/Users/kentahsu/Code/Personal/QOL_Score/All_in_one_QOL_input_extraction_kenta_version.py", entry_number], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-            subprocess.run(["python3", f"/Users/{username}/Code/Personal/QOL_Score/All_in_one_QOL_score_compute_kenta_version.py"], input=result.stdout, text=True, check=True)
-            messagebox.showinfo("Success", "QOL score calculated successfully!")
-        except subprocess.CalledProcessError as e:
-            print(f"Subprocess failed: {e.stderr}")
-            messagebox.showerror("Error", f"Subprocess failed: {e.stderr}")
-
-    thread = threading.Thread(target=run_subprocess)
-    thread.start()
-
-def resize_image(image_path, width, height):
-    image = Image.open(image_path)
-    resized_image = image.resize((width, height), Image.LANCZOS)  # Use Image.LANCZOS instead of Image.ANTIALIAS
-    return ImageTk.PhotoImage(resized_image)
 
 
 root = tk.Tk()
@@ -197,7 +286,14 @@ offday_menu.grid(row=9, column=1, sticky="nsew")
 
 # Resize the submit button image
 submit_button_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/boyyaky_button.png", 100, 100)
-submit_button = tk.Button(root, image=submit_button_image, command=submit_data, borderwidth=0)
+submit_button = tk.Button(root, image=submit_button_image, command=update_and_display_everything, borderwidth=0)
 submit_button.grid(row=10, column=0, columnspan=2, sticky="nsew")
+
+plot_button = tk.Button(root, text="Push for Graph", command=plot_qol_score, font=retro_font, bg="black", fg="white")
+plot_button.grid(row=11, column=0, columnspan=2, sticky="nsew")
+root.update_idletasks()  # Force update the UI
+
+# Call this function after the main loop starts
+root.after(100, create_plot_button)
 
 root.mainloop()

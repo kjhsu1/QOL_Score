@@ -9,8 +9,6 @@ from tkinter import messagebox
 from PIL import Image, ImageTk
 import random
 
-from datetime import datetime, timedelta
-
 def calculate_qol_score(data):
     wake_time = data["Wake Times"][0]
     sleep_time = data["Sleep Times"][0]
