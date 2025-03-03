@@ -133,11 +133,6 @@ def plot_qol_score():
     plt.tight_layout()
     plt.show()
 
-def create_plot_button():
-    plot_button = tk.Button(root, text="Push for Graph", command=plot_qol_score, font=retro_font, bg="black", fg="white")
-    plot_button.grid(row=11, column=0, columnspan=2, sticky="nsew")
-    root.update_idletasks()  # Force update the UI'
-
 # return "Streak" prop. value in database given entry number
 def fetch_streak_by_name(entry_name):
     url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
@@ -303,17 +298,26 @@ submit_button.grid(row=10, column=0, columnspan=2, sticky="nsew")
 style = ttk.Style()
 style.configure("TButton", font=retro_font, background="yellow", foreground="blue")
 
-plot_button = ttk.Button(root, text="Push for Graph", command=plot_qol_score, style="TButton")
-plot_button.grid(row=11, column=0, columnspan=2)
-
-# Load the new button image
+# Keep references to the images to prevent garbage collection
+plot_button_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/kabu_chart_man_happy.jpg", 130, 100)
 ranking_button_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/jyaian.jpg", 100, 100)
+
+# Destroy any existing widgets in the grid location
+for widget in root.grid_slaves(row=11, column=0):
+    widget.destroy()
+for widget in root.grid_slaves(row=12, column=0):
+    widget.destroy()
+
+plot_button = tk.Button(root, image=plot_button_image, command=plot_qol_score, borderwidth=0)
+plot_button.grid(row=11, column=0, columnspan=2, sticky="nsew")
+
 ranking_button = tk.Button(root, image=ranking_button_image, command=run_ranking_as_subprocess, borderwidth=0)
 ranking_button.grid(row=12, column=0, columnspan=2, sticky="nsew")
 
-root.update_idletasks()  # Force update the UI
+# Store image references in the root object to prevent garbage collection
+root.plot_button_image = plot_button_image
+root.ranking_button_image = ranking_button_image
 
-# Call this function after the main loop starts
-root.after(100, create_plot_button)
+root.update_idletasks()  # Force update the UI
 
 root.mainloop()
