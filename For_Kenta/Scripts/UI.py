@@ -3,6 +3,7 @@
 import requests
 import json
 import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox, font
 import tkinter.font as tkFont
 from datetime import datetime, timedelta
@@ -75,7 +76,6 @@ def update_notion_database(data):
     response = requests.post(url, json=payload, headers=headers)
     return response.status_code == 200
 
-# try to run score_compute.py in another thread
 def display_qol_score(data):
     def run_subprocess():
         username = os.getenv('USER')
@@ -177,16 +177,22 @@ def get_values_from_user():
     }
     # add qol
     qol_score = QOL_LIB.calculate_qol_score(data)
-    data["qol_score"] = qol_score
+    data["qol_score"] = round(qol_score, 1)
     
     # add streak
     current_streak = 0
     previous_streak = int(fetch_streak_by_name(str(int(data["entry_number"])-1)))
-    if data["qol_score"] > 65:
+    if data["qol_score"] >= 65:
         if previous_streak <= 0:
             current_streak = 1
         if previous_streak > 0:
             current_streak = previous_streak + 1
+    if data["qol_score"] < 65:
+        if previous_streak <= 0:
+            current_streak = previous_streak - 1
+        if previous_streak > 0:
+            current_streak = -1
+
     data["streak"] = current_streak
 
     return data
@@ -195,7 +201,9 @@ def get_values_from_user():
 # revised update_and_display_everything function
 def update_and_display_everything():
     data = get_values_from_user()
-    if all(data.values()):
+    
+    # Check for None values instead of using all()
+    if all(value is not None for value in data.values()):
         if update_notion_database(data):
             messagebox.showinfo("Success", "Data updated successfully!")
             display_qol_score(data["entry_number"])
@@ -205,6 +213,10 @@ def update_and_display_everything():
         messagebox.showwarning("Incomplete Data", "Please fill out all fields.")
 
 
+
+def run_ranking_as_subprocess():
+    # Your function implementation here
+    pass
 
 root = tk.Tk()
 root.title("Daily QOL Data Input")
@@ -222,8 +234,6 @@ background_label.place(relwidth=1, relheight=1)
 
 # Set retro font
 font_path = "/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Text_Files/Press_Start_2P/PressStart2P-Regular.ttf"  # Path to your .ttf file
-
-# Set retro font
 retro_font = tkFont.Font(family="Press Start 2P", size=15)  # Load the font using Tkinter
 highest_entry_number = get_highest_entry_number()
 
@@ -289,8 +299,18 @@ submit_button_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/For_
 submit_button = tk.Button(root, image=submit_button_image, command=update_and_display_everything, borderwidth=0)
 submit_button.grid(row=10, column=0, columnspan=2, sticky="nsew")
 
-plot_button = tk.Button(root, text="Push for Graph", command=plot_qol_score, font=retro_font, bg="black", fg="white")
-plot_button.grid(row=11, column=0, columnspan=2, sticky="nsew")
+# Configure plot button with ttk
+style = ttk.Style()
+style.configure("TButton", font=retro_font, background="yellow", foreground="blue")
+
+plot_button = ttk.Button(root, text="Push for Graph", command=plot_qol_score, style="TButton")
+plot_button.grid(row=11, column=0, columnspan=2)
+
+# Load the new button image
+ranking_button_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/jyaian.jpg", 100, 100)
+ranking_button = tk.Button(root, image=ranking_button_image, command=run_ranking_as_subprocess, borderwidth=0)
+ranking_button.grid(row=12, column=0, columnspan=2, sticky="nsew")
+
 root.update_idletasks()  # Force update the UI
 
 # Call this function after the main loop starts
