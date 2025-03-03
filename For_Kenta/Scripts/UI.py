@@ -210,8 +210,17 @@ def update_and_display_everything():
 
 
 def run_ranking_as_subprocess():
-    # Your function implementation here
-    pass
+    def run_ranking():
+        username = os.getenv('USER')
+        try:
+            subprocess.run(["python3", f"/Users/{username}/Code/Personal/QOL_Score/For_Kenta/Scripts/ranking.py"], text=True, check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Subprocess failed: {e.stderr}")
+            messagebox.showerror("Error", f"Subprocess failed: {e.stderr}")
+    thread = threading.Thread(target=run_ranking)
+    thread.start()
+
+    
 
 root = tk.Tk()
 root.title("Daily QOL Data Input")
