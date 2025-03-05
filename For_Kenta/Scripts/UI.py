@@ -17,6 +17,7 @@ import QOL_LIB # my homemade library
 
 
 # dict with all user info
+# includes "User Analysis Requests" database
 all_users = {
     "Kenta": {
         "NOTION_TOKEN": "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",
@@ -26,16 +27,32 @@ all_users = {
     "Kazuma":{
         "NOTION_TOKEN": "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",
         "DATABASE_ID": "1954d9b143a981019212fbe32c21a6a1" 
+    },
+
+    "User_Analysis_Requests_Database":{
+        "NOTION_TOKEN": "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",
+        "DATABASE_ID": "1ad4d9b143a980e7806ece9c6a0eb626"
     }
 
 }
 
-# change this for other users
+# CHANGE THIS FOR OTHER USERS
+user = "Kenta"
 DATABASE_ID = all_users["Kenta"]["DATABASE_ID"]
 NOTION_TOKEN = all_users["Kenta"]["NOTION_TOKEN"]
+# Analysis Request Database
+AR_DATABASE_ID = all_users["User_Analysis_Requests_Database"]["DATABASE_ID"]
+AR_NOTION_TOKEN = all_users["User_Analysis_Requests_Database"]["NOTION_TOKEN"]
 
 headers = {
     "Authorization": "Bearer " + NOTION_TOKEN,
+    "Content-Type": "application/json",
+    "Notion-Version": "2022-06-28",
+}
+
+# header for Analysis Requests Database
+ar_headers = {
+    "Authorization": "Bearer " + AR_NOTION_TOKEN,
     "Content-Type": "application/json",
     "Notion-Version": "2022-06-28",
 }
@@ -202,7 +219,6 @@ def get_values_from_user():
 
     return data
 
-
 # revised update_and_display_everything function
 def update_and_display_everything():
     data = get_values_from_user()
@@ -227,6 +243,50 @@ def run_ranking_as_subprocess():
             messagebox.showerror("Error", f"Subprocess failed: {e.stderr}")
     thread = threading.Thread(target=run_ranking)
     thread.start()
+
+# update the analysis request database
+def update_analysis_request_database():
+    # Get the current date
+    current_date = datetime.now()
+    # Format the date as YYYY-MM-DD
+    formatted_date = current_date.strftime("%Y-%m-%d")
+
+    url = f"https://api.notion.com/v1/pages"
+    payload = {
+        "parent": {"database_id": AR_DATABASE_ID},
+        "properties": {
+            "Username": {"title": [{"text": {"content": user}}]},
+            "Request Date": {"date":{"start": formatted_date}}
+        }
+    }
+
+    response = requests.post(url, json=payload, headers=ar_headers)
+    #print(response.status_code)
+    #print(response.json())  # This will print the response content
+    return response.status_code == 200
+
+# analysis request = AR
+def ar():
+    if update_analysis_request_database():
+            messagebox.showinfo("Success", "Analysis request sent successfully!")
+    else:
+            messagebox.showerror("Error", "Failed to send analysis request.")
+
+# check for new Analysis
+# THIS FUNCTION IS WORK IN PROGRESS
+def check_for_analysis():
+    url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
+    payload = {
+    "sorts": [
+            {
+            "property": "Name",
+            "direction": "descending"
+            }
+        ]
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+    data = response.json()
     
 root = tk.Tk()
 root.title("Daily QOL Data Input")
@@ -332,12 +392,13 @@ ranking_button = tk.Button(root, image=ranking_button_image, command=run_ranking
 ranking_button.grid(row=13, column=0, sticky="nsew")
 
 # request analysis button
-request_analysis_button = tk.Button(root, image=request_button_image, command=run_ranking_as_subprocess, borderwidth=0)
+request_analysis_button = tk.Button(root, image=request_button_image, command=ar, borderwidth=0)
 request_analysis_button.grid(row=12, column=1, sticky="nsew")
 
 # check for analysis button
 check_analysis = tk.Button(root, image=check_analysis_image, command=run_ranking_as_subprocess, borderwidth=0)
 check_analysis.grid(row=13, column=1, sticky="nsew")
+
 
 root.update_idletasks()  # Force update the UI
 
