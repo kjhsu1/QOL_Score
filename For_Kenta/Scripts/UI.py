@@ -16,15 +16,23 @@ import matplotlib.pyplot as plt
 import QOL_LIB # my homemade library 
 
 
-# For Kenta's Database
-NOTION_TOKEN = "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"
-DATABASE_ID = "1924d9b143a980719cabc4f151bc30fb"
+# dict with all user info
+all_users = {
+    "Kenta": {
+        "NOTION_TOKEN": "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",
+        "DATABASE_ID": "1924d9b143a980719cabc4f151bc30fb"
+    },
 
-'''
-# For Kazuma's Database
-NOTION_TOKEN = "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"
-DATABASE_ID = "1954d9b143a981019212fbe32c21a6a1" 
-'''
+    "Kazuma":{
+        "NOTION_TOKEN": "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",
+        "DATABASE_ID": "1954d9b143a981019212fbe32c21a6a1" 
+    }
+
+}
+
+# change this for other users
+DATABASE_ID = all_users["Kenta"]["DATABASE_ID"]
+NOTION_TOKEN = all_users["Kenta"]["NOTION_TOKEN"]
 
 headers = {
     "Authorization": "Bearer " + NOTION_TOKEN,
@@ -314,16 +322,22 @@ style.configure("TButton", font=retro_font, background="yellow", foreground="blu
 # Keep references to the images to prevent garbage collection
 plot_button_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/kabu_chart_man_happy.jpg", 130, 100)
 ranking_button_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/jyaian.jpg", 100, 100)
+request_button_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/yugioh.jpg", 150, 100)
+check_analysis_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/mail.jpg", 100, 100)
 
 plot_button = tk.Button(root, image=plot_button_image, command=plot_qol_score, borderwidth=0)
-plot_button.grid(row=12, column=0, columnspan=2, sticky="nsew")
+plot_button.grid(row=12, column=0, sticky="nsew")
 
 ranking_button = tk.Button(root, image=ranking_button_image, command=run_ranking_as_subprocess, borderwidth=0)
-ranking_button.grid(row=13, column=0, columnspan=2, sticky="nsew")
+ranking_button.grid(row=13, column=0, sticky="nsew")
 
-# Store image references in the root object to prevent garbage collection
-root.plot_button_image = plot_button_image
-root.ranking_button_image = ranking_button_image
+# request analysis button
+request_analysis_button = tk.Button(root, image=request_button_image, command=run_ranking_as_subprocess, borderwidth=0)
+request_analysis_button.grid(row=12, column=1, sticky="nsew")
+
+# check for analysis button
+check_analysis = tk.Button(root, image=check_analysis_image, command=run_ranking_as_subprocess, borderwidth=0)
+check_analysis.grid(row=13, column=1, sticky="nsew")
 
 root.update_idletasks()  # Force update the UI
 
