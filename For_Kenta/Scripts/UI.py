@@ -70,7 +70,8 @@ def update_notion_database(data):
             "Time Focused": {"number": int(data["time_focused"])},
             "Offday/Special Day?": {"select": {"name": data["offday_special_day"]}},
             "QOL Score": {"number": int(data["qol_score"])}, # NEW ADDITION
-            "Streak": {"number": int(data["streak"])} # NEW ADDITION
+            "Streak": {"number": int(data["streak"])}, # NEW ADDITION
+            "Diary": {"rich_text": [{"text": {"content": str(data["diary"])}}]} # NEW ADDITION
         }
     }
     response = requests.post(url, json=payload, headers=headers)
@@ -168,7 +169,8 @@ def get_values_from_user():
         "social_media": social_media_entry.get(),
         "todays_date": todays_date_entry.get(),
         "time_focused": time_focused_entry.get(),
-        "offday_special_day": offday_special_day_var.get()
+        "offday_special_day": offday_special_day_var.get(),
+        "diary": diary_entry.get()
     }
     # add qol
     qol_score = QOL_LIB.calculate_qol_score(data)
@@ -207,8 +209,6 @@ def update_and_display_everything():
     else:
         messagebox.showwarning("Incomplete Data", "Please fill out all fields.")
 
-
-
 def run_ranking_as_subprocess():
     def run_ranking():
         username = os.getenv('USER')
@@ -219,9 +219,7 @@ def run_ranking_as_subprocess():
             messagebox.showerror("Error", f"Subprocess failed: {e.stderr}")
     thread = threading.Thread(target=run_ranking)
     thread.start()
-
     
-
 root = tk.Tk()
 root.title("Daily QOL Data Input")
 
@@ -298,10 +296,16 @@ offday_menu = tk.OptionMenu(root, offday_special_day_var, "Yes", "No")
 offday_menu.config(font=retro_font, bg="black", fg="white")
 offday_menu.grid(row=9, column=1, sticky="nsew")
 
+# Diary
+tk.Label(root, text="Diary (Separate Events by ',')", font=retro_font, bg="black", fg="white").grid(row=10, column=0, sticky="nsew")
+diary_entry = tk.Entry(root, font=retro_font, bg="black", fg="white")
+diary_entry.insert(0, "What Happened Today?")
+diary_entry.grid(row=10, column=1, sticky="nsew")
+
 # Resize the submit button image
 submit_button_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/boyyaky_button.png", 100, 100)
 submit_button = tk.Button(root, image=submit_button_image, command=update_and_display_everything, borderwidth=0)
-submit_button.grid(row=10, column=0, columnspan=2, sticky="nsew")
+submit_button.grid(row=11, column=0, columnspan=2, sticky="nsew")
 
 # Configure plot button with ttk
 style = ttk.Style()
@@ -311,17 +315,11 @@ style.configure("TButton", font=retro_font, background="yellow", foreground="blu
 plot_button_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/kabu_chart_man_happy.jpg", 130, 100)
 ranking_button_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/jyaian.jpg", 100, 100)
 
-# Destroy any existing widgets in the grid location
-for widget in root.grid_slaves(row=11, column=0):
-    widget.destroy()
-for widget in root.grid_slaves(row=12, column=0):
-    widget.destroy()
-
 plot_button = tk.Button(root, image=plot_button_image, command=plot_qol_score, borderwidth=0)
-plot_button.grid(row=11, column=0, columnspan=2, sticky="nsew")
+plot_button.grid(row=12, column=0, columnspan=2, sticky="nsew")
 
 ranking_button = tk.Button(root, image=ranking_button_image, command=run_ranking_as_subprocess, borderwidth=0)
-ranking_button.grid(row=12, column=0, columnspan=2, sticky="nsew")
+ranking_button.grid(row=13, column=0, columnspan=2, sticky="nsew")
 
 # Store image references in the root object to prevent garbage collection
 root.plot_button_image = plot_button_image

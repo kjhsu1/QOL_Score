@@ -22,11 +22,16 @@ all_users = {
 }
 
 # just to see structure of database json
-def display_structure(DATABASE_ID):
+def display_structure(DATABASE_ID, user):
 	url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
 	payload = {
 		"page_size": 1
 	}
+	headers = {
+	    "Authorization": "Bearer " + all_users[user]["NOTION_TOKEN"],
+	    "Content-Type": "application/json",
+	    "Notion-Version": "2022-06-28",
+		}
 	response = requests.post(url, headers=headers, json=payload)
 	data = response.json()
 	results = data.get("results", [])
@@ -146,6 +151,6 @@ def main():
 if __name__ == '__main__':
 	main()
 
-
+# display_structure(all_users["Kenta"]["DATABASE_ID"], "Kenta")
 
 
