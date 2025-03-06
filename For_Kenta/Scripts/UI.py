@@ -5,6 +5,7 @@ import json
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox, font
+from tkinter import scrolledtext
 import tkinter.font as tkFont
 from datetime import datetime, timedelta
 import pytz
@@ -272,6 +273,43 @@ def ar():
     else:
             messagebox.showerror("Error", "Failed to send analysis request.")
 
+# tkinter display the analysis results
+def display_analysis_results(root, analysis_property):
+    # Create a new top-level window instead of Tk()
+    analysis_window = tk.Toplevel(root)
+    analysis_window.title("Analysis Results")
+    analysis_window.geometry("900x700")  # Keep window size large
+
+    # Load and set the background image
+    background_image = Image.open("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/medalist.jpeg")
+    background_photo = ImageTk.PhotoImage(background_image)
+
+    # Keep a reference in root to avoid garbage collection
+    analysis_window.background_photo = background_photo  
+
+    background_label = tk.Label(analysis_window, image=background_photo)
+    background_label.place(relwidth=1, relheight=1)
+
+    # Load retro font
+    font_path = "/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Text_Files/Press_Start_2P/PressStart2P-Regular.ttf"
+    
+    # Adjusted fonts for better proportions
+    title_font = tkFont.Font(family="Press Start 2P", size=18)  # Title is big but not overwhelming
+    text_font = tkFont.Font(family="Press Start 2P", size=15)   # Text is readable without stretching
+
+    # Title label (Bigger & Centered)
+    title_label = tk.Label(analysis_window, text="Analysis Results", font=title_font, bg="white", fg="black")
+    title_label.place(relx=0.5, rely=0.07, anchor="center")
+
+    # Scrollable text box (Shrunk width further)
+    text_area = scrolledtext.ScrolledText(
+        analysis_window, wrap=tk.WORD, font=text_font, 
+        bg="black", fg="lime", width=50, height=30  # Further reduced width + balanced height
+    )
+    text_area.insert(tk.INSERT, analysis_property)  # Insert analysis report
+    text_area.config(state=tk.DISABLED)  # Make it read-only
+    text_area.place(relx=0.5, rely=0.55, anchor="center")  # Keep it centered
+
 # check for new Analysis
 # THIS FUNCTION IS WORK IN PROGRESS
 def check_for_analysis():
@@ -287,7 +325,13 @@ def check_for_analysis():
 
     response = requests.post(url, json=payload, headers=headers)
     data = response.json()
-    
+    results = data.get("results", [])
+    properties = results[0].get("properties", [])
+    analysis_property = properties.get("Analysis", []).get("rich_text", [])[0].get("text").get("content")
+
+    display_analysis_results(root, analysis_property)
+
+# MAIN TKINTER THREAD
 root = tk.Tk()
 root.title("Daily QOL Data Input")
 
@@ -396,7 +440,7 @@ request_analysis_button = tk.Button(root, image=request_button_image, command=ar
 request_analysis_button.grid(row=12, column=1, sticky="nsew")
 
 # check for analysis button
-check_analysis = tk.Button(root, image=check_analysis_image, command=run_ranking_as_subprocess, borderwidth=0)
+check_analysis = tk.Button(root, image=check_analysis_image, command=check_for_analysis, borderwidth=0)
 check_analysis.grid(row=13, column=1, sticky="nsew")
 
 
