@@ -9,7 +9,7 @@ from tkinter import messagebox
 from PIL import Image, ImageTk
 import random
 
-first_part_of_path = f"/Users/{username}/Downloads/QOL_Score/For_new_users"
+first_part_of_path = f"/Users/{username}/Downloads/QOL_Score/For_new_users_v2"
 
 def calculate_qol_score(data):
     wake_time = data["Wake Times"][0]

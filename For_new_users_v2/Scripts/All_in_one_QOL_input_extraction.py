@@ -29,7 +29,7 @@ all_users = {
 user = "Kenta"
 username = os.getenv('USER')
 # assuming you git clone directory in Downloads...
-first_part_of_path = f"/Users/{username}/Downloads/QOL_Score/For_new_users"
+first_part_of_path = f"/Users/{username}/Downloads/QOL_Score/For_new_users_v2"
 
 DATABASE_ID = all_users["Kenta"]["DATABASE_ID"]
 NOTION_TOKEN = all_users["Kenta"]["NOTION_TOKEN"]

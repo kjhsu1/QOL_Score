@@ -8,7 +8,7 @@ export CONDA_PREFIX=/opt/anaconda3
 export CONDA_DEFAULT_ENV=base
 
 # Activate the conda environment
-source /opt/anaconda3/bin/activate base
+source /opt/anaconda3/bin/activate QOL_env
 
 # Run the Python script
 /opt/anaconda3/bin/python /Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Scripts/UI.py

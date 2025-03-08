@@ -7,6 +7,9 @@ from tkinter import messagebox, font
 import tkinter.font as tkFont
 from PIL import Image, ImageTk
 
+username = os.getenv('USER')
+first_part_of_path = f"/Users/{username}/Downloads/QOL_Score/For_new_users_v2"
+
 # dict with all user info
 all_users = {
     "Kenta": {
@@ -108,7 +111,7 @@ def display_it(rank):
 	background_label.place(relwidth=1, relheight=1)
 
 	# Set retro font
-	font_path = "/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Text_Files/Press_Start_2P/PressStart2P-Regular.ttf"
+	font_path = f"{first_part_of_path}/Text_Files/Press_Start_2P/PressStart2P-Regular.ttf"
 	root.option_add("*Font", tkFont.Font(family="Press Start 2P", size=25))
 	retro_font = tkFont.Font(family="Press Start 2P", size=25)
 
@@ -132,7 +135,7 @@ def display_it(rank):
 		create_ranking_label(i + 1, name, score)
 
 	# Add pixel game-themed images (if provided)
-	images = ["/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/gold_medal.jpg", "/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/silver_medal.jpg", "/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/bronze_medal.jpg"]
+	images = [f"{first_part_of_path}/Images/gold_medal.jpg", f"{first_part_of_path}/Images/silver_medal.jpg", f"{first_part_of_path}/Images/bronze_medal.jpg"]
 	for i, image_path in enumerate(images):
 		try:
 			print(f"Loading image: {image_path}")
