@@ -428,7 +428,7 @@ style = ttk.Style()
 style.configure("TButton", font=retro_font, background="yellow", foreground="blue")
 
 # Keep references to the images to prevent garbage collection
-plot_button_image = resize_image(f"/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/kabu_chart_man_happy.jpg", 130, 100)
+plot_button_image = resize_image(f"{first_part_of_path}/Images/kabu_chart_man_happy.jpg", 130, 100)
 ranking_button_image = resize_image(f"{first_part_of_path}/Images/jyaian.jpg", 100, 100)
 request_button_image = resize_image(f"{first_part_of_path}/Images/yugioh.jpg", 150, 100)
 check_analysis_image = resize_image(f"{first_part_of_path}/Images/mail.jpg", 100, 100)
