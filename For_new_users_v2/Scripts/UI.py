@@ -39,6 +39,10 @@ all_users = {
 
 # CHANGE THIS FOR OTHER USERS
 user = "Kenta"
+username = os.getenv('USER')
+# assuming you git clone directory in Downloads...
+first_part_of_path = f"/Users/{username}/Downloads/QOL_Score/For_new_users"
+
 DATABASE_ID = all_users["Kenta"]["DATABASE_ID"]
 NOTION_TOKEN = all_users["Kenta"]["NOTION_TOKEN"]
 # Analysis Request Database
@@ -107,8 +111,8 @@ def display_qol_score(data):
     def run_subprocess():
         username = os.getenv('USER')
         try:
-            result = subprocess.run(["python3", f"/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Scripts/All_in_one_QOL_input_extraction_kenta_version.py", entry_number_entry.get()], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-            subprocess.run(["python3", f"/Users/{username}/Code/Personal/QOL_Score/For_Kenta/Scripts/All_in_one_QOL_score_compute_kenta_version.py"], input=result.stdout, text=True, check=True)
+            result = subprocess.run(["python3", f"{first_part_of_path}/Scripts/All_in_one_QOL_input_extraction.py", entry_number_entry.get()], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+            subprocess.run(["python3", f"{first_part_of_path}/Scripts/All_in_one_QOL_score_compute_kenta_version.py"], input=result.stdout, text=True, check=True)
 
         except subprocess.CalledProcessError as e:
             print(f"Subprocess failed: {e.stderr}")
@@ -238,7 +242,7 @@ def run_ranking_as_subprocess():
     def run_ranking():
         username = os.getenv('USER')
         try:
-            subprocess.run(["python3", f"/Users/{username}/Code/Personal/QOL_Score/For_Kenta/Scripts/ranking.py"], text=True, check=True)
+            subprocess.run(["python3", f"{first_part_of_path}/Scripts/ranking.py"], text=True, check=True)
         except subprocess.CalledProcessError as e:
             print(f"Subprocess failed: {e.stderr}")
             messagebox.showerror("Error", f"Subprocess failed: {e.stderr}")
@@ -281,7 +285,7 @@ def display_analysis_results(root, analysis_property):
     analysis_window.geometry("900x700")  # Keep window size large
 
     # Load and set the background image
-    background_image = Image.open("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/medalist.jpeg")
+    background_image = Image.open(f"{first_part_of_path}/Images/medalist.jpeg")
     background_photo = ImageTk.PhotoImage(background_image)
 
     # Keep a reference in root to avoid garbage collection
@@ -291,7 +295,7 @@ def display_analysis_results(root, analysis_property):
     background_label.place(relwidth=1, relheight=1)
 
     # Load retro font
-    font_path = "/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Text_Files/Press_Start_2P/PressStart2P-Regular.ttf"
+    font_path = f"{first_part_of_path}/Text_Files/Press_Start_2P/PressStart2P-Regular.ttf"
     
     # Adjusted fonts for better proportions
     title_font = tkFont.Font(family="Press Start 2P", size=18)  # Title is big but not overwhelming
@@ -342,12 +346,12 @@ root.geometry("1200x1200")  # Adjust the size as needed
 root.resizable(True, True)
 
 # Load pixel art background
-background_image = tk.PhotoImage(file="/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/pixel_smile_background.png")  # Replace with your image path
+background_image = tk.PhotoImage(file=f"{first_part_of_path}/Images/pixel_smile_background.png")  # Replace with your image path
 background_label = tk.Label(root, image=background_image)
 background_label.place(relwidth=1, relheight=1)
 
 # Set retro font
-font_path = "/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Text_Files/Press_Start_2P/PressStart2P-Regular.ttf"  # Path to your .ttf file
+font_path = f"{first_part_of_path}/Text_Files/Press_Start_2P/PressStart2P-Regular.ttf"  # Path to your .ttf file
 retro_font = tkFont.Font(family="Press Start 2P", size=15)  # Load the font using Tkinter
 highest_entry_number = get_highest_entry_number()
 
@@ -415,7 +419,7 @@ diary_entry.insert(0, "What Happened Today?")
 diary_entry.grid(row=10, column=1, sticky="nsew")
 
 # Resize the submit button image
-submit_button_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/boyyaky_button.png", 100, 100)
+submit_button_image = resize_image(f"{first_part_of_path}/Images/boyyaky_button.png", 100, 100)
 submit_button = tk.Button(root, image=submit_button_image, command=update_and_display_everything, borderwidth=0)
 submit_button.grid(row=11, column=0, columnspan=2, sticky="nsew")
 
@@ -424,10 +428,10 @@ style = ttk.Style()
 style.configure("TButton", font=retro_font, background="yellow", foreground="blue")
 
 # Keep references to the images to prevent garbage collection
-plot_button_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/kabu_chart_man_happy.jpg", 130, 100)
-ranking_button_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/jyaian.jpg", 100, 100)
-request_button_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/yugioh.jpg", 150, 100)
-check_analysis_image = resize_image("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/mail.jpg", 100, 100)
+plot_button_image = resize_image(f"/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/kabu_chart_man_happy.jpg", 130, 100)
+ranking_button_image = resize_image(f"{first_part_of_path}/Images/jyaian.jpg", 100, 100)
+request_button_image = resize_image(f"{first_part_of_path}/Images/yugioh.jpg", 150, 100)
+check_analysis_image = resize_image(f"{first_part_of_path}/Images/mail.jpg", 100, 100)
 
 plot_button = tk.Button(root, image=plot_button_image, command=plot_qol_score, borderwidth=0)
 plot_button.grid(row=12, column=0, sticky="nsew")
