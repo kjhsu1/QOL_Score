@@ -31,8 +31,8 @@ username = os.getenv('USER')
 # assuming you git clone directory in Downloads...
 first_part_of_path = f"/Users/{username}/Downloads/QOL_Score/For_new_users_v2"
 
-DATABASE_ID = all_users["Kenta"]["DATABASE_ID"]
-NOTION_TOKEN = all_users["Kenta"]["NOTION_TOKEN"]
+DATABASE_ID = all_users[user]["DATABASE_ID"]
+NOTION_TOKEN = all_users[user]["NOTION_TOKEN"]
 
 headers = {
     "Authorization": "Bearer " + NOTION_TOKEN,
