@@ -112,7 +112,7 @@ def display_qol_score(data):
         username = os.getenv('USER')
         try:
             result = subprocess.run(["python3", f"{first_part_of_path}/Scripts/All_in_one_QOL_input_extraction.py", entry_number_entry.get()], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-            subprocess.run(["python3", f"{first_part_of_path}/Scripts/All_in_one_QOL_score_compute_kenta_version.py"], input=result.stdout, text=True, check=True)
+            subprocess.run(["python3", f"{first_part_of_path}/Scripts/All_in_one_QOL_score_compute.py"], input=result.stdout, text=True, check=True)
 
         except subprocess.CalledProcessError as e:
             print(f"Subprocess failed: {e.stderr}")

@@ -6,6 +6,7 @@ from tkinter import ttk
 from tkinter import messagebox, font
 import tkinter.font as tkFont
 from PIL import Image, ImageTk
+import os
 
 username = os.getenv('USER')
 first_part_of_path = f"/Users/{username}/Downloads/QOL_Score/For_new_users_v2"
