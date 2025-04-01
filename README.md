@@ -5,7 +5,7 @@ How to Use
 
 1. Go into terminal, run, ```git clone https://github.com/kjhsu1/QOL_Score.git```
 	- Make sure to go into ```cd /Applications``` to git clone
-2. Open All_in_one_QOL_input_extraction.py and UI.py and change variable, ```user```
+2. Open All_in_one_QOL_input_extraction.py, All_in_one_QOL_score_compute.py, and UI.py and change variable, ```user``` to your name.
 	- ex. ```user = "Kenta"```
 
 *Note: New User Should download anaconda, then pip install all of the required modules using environment.yml

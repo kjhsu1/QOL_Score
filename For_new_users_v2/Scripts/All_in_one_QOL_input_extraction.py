@@ -5,6 +5,8 @@ import json
 import sys
 import os
 
+# !!!!!!!!!!!! CHANGE THIS FOR OTHER USERS !!!!!!!!!!!
+user = "Kenta"
 
 # dict with all user info
 # includes "User Analysis Requests" database
@@ -26,8 +28,6 @@ all_users = {
 
 }
 
-# CHANGE THIS FOR OTHER USERS
-user = "Kenta"
 # assuming you git clone directory in Applications...
 first_part_of_path = "/Applications/QOL_Score/For_new_users_v2"
 

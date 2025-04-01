@@ -10,6 +10,11 @@ from PIL import Image, ImageTk
 import random
 import requests
 
+
+
+# !!!!!!!!!!! CHANGE THIS FOR OTHER USERS !!!!!!!!!!!!!!
+user = "Kenta"
+
 first_part_of_path = "/Applications/QOL_Score/For_new_users_v2"
 
 # dict with all user info
@@ -32,8 +37,6 @@ all_users = {
 
 }
 
-# CHANGE THIS FOR OTHER USERS
-user = "Kenta"
 DATABASE_ID = all_users[user]["DATABASE_ID"]
 NOTION_TOKEN = all_users[user]["NOTION_TOKEN"]
 # Analysis Request Database
