@@ -3,6 +3,7 @@
 import requests
 import json
 import sys
+import os
 
 
 # dict with all user info
