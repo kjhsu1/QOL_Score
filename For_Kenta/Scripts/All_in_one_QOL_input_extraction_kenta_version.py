@@ -9,7 +9,6 @@ import sys
 NOTION_TOKEN = "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"
 DATABASE_ID = "1924d9b143a980719cabc4f151bc30fb"
 
-
 '''
 # For Kazuma's Database
 NOTION_TOKEN = "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"

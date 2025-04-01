@@ -8,6 +8,68 @@ import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
 import random
+import requests
+
+
+# dict with all user info
+# includes "User Analysis Requests" database
+all_users = {
+    "Kenta": {
+        "NOTION_TOKEN": "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",
+        "DATABASE_ID": "1924d9b143a980719cabc4f151bc30fb"
+    },
+
+    "Kazuma":{
+        "NOTION_TOKEN": "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",
+        "DATABASE_ID": "1954d9b143a981019212fbe32c21a6a1" 
+    },
+
+    "User_Analysis_Requests_Database":{
+        "NOTION_TOKEN": "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",
+        "DATABASE_ID": "1ad4d9b143a980e7806ece9c6a0eb626"
+    }
+
+}
+
+# CHANGE THIS FOR OTHER USERS
+user = "Kenta"
+DATABASE_ID = all_users[user]["DATABASE_ID"]
+NOTION_TOKEN = all_users[user]["NOTION_TOKEN"]
+# Analysis Request Database
+AR_DATABASE_ID = all_users["User_Analysis_Requests_Database"]["DATABASE_ID"]
+AR_NOTION_TOKEN = all_users["User_Analysis_Requests_Database"]["NOTION_TOKEN"]
+
+headers = {
+    "Authorization": "Bearer " + NOTION_TOKEN,
+    "Content-Type": "application/json",
+    "Notion-Version": "2022-06-28",
+}
+
+# header for Analysis Requests Database
+ar_headers = {
+    "Authorization": "Bearer " + AR_NOTION_TOKEN,
+    "Content-Type": "application/json",
+    "Notion-Version": "2022-06-28",
+}
+
+# MODIFY THIS FUNCTION TO EXTRACT STREAK VALUE FROM LATEST ENTRY
+    # update: modified
+def fetch_latest_streak():
+    url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
+    response = requests.post(url, headers=headers)
+    data = response.json()
+    results = data.get("results", [])
+    
+    if not results:
+        return None
+    
+    # Extract the entry with the highest numerical "Name" value
+    highest_entry = max(results, key=lambda x: int(x["properties"].get("Name", {}).get("title", [{}])[0].get("plain_text", "0")))
+    
+    # Get the Streak property from the highest entry
+    streak_property = highest_entry.get("properties", {}).get("Streak", {}).get("number", None)
+    return streak_property
+
 
 def calculate_qol_score(data):
     wake_time = data["Wake Times"][0]
@@ -181,45 +243,17 @@ def main():
     score = calculate_qol_score(data)
 
     # Track streaks
-    streak_file = "/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/streaks.json"
-
-    # Initialize streaks data
-    if not os.path.exists(streak_file):
-        streaks = {"good_streak": 0, "bad_streak": 0, "last_score": None, "last_update": ""}
-    else:
-        with open(streak_file, 'r') as file:
-            streaks = json.load(file)
-
-    today_date_str = datetime.now().strftime("%Y-%m-%d")
-
-    # Ensure 'last_update' key exists in streaks dictionary to avoid KeyError
-    if 'last_update' not in streaks:
-        streaks['last_update'] = ""
-
-    # Check if the streaks were updated today
-    if streaks["last_update"] != today_date_str:
-        # Update streaks only if they were not updated today
-        if score >= 65:
-            if streaks["last_score"] is not None and streaks["last_score"] >= 80:
-                streaks["good_streak"] += 1
-            else:
-                streaks["good_streak"] = 1
-            streaks["bad_streak"] = 0
-        else:
-            if streaks["last_score"] is not None and streaks["last_score"] < 80:
-                streaks["bad_streak"] += 1
-            else:
-                streaks["bad_streak"] = 1
-            streaks["good_streak"] = 0
-
-        streaks["last_score"] = score
-        streaks["last_update"] = today_date_str
-
-        # Save streaks data only if updated today
-        with open(streak_file, 'w') as file:
-            json.dump(streaks, file, indent=4)
-
-    display_qol_score(score, streaks['good_streak'], streaks['bad_streak'])
+    latest_streak = fetch_latest_streak()
+    good_streak = 0
+    bad_streak = 0
+    if latest_streak == 0:
+        pass
+    elif latest_streak > 0:
+        good_streak = latest_streak
+    elif latest_streak < 0:
+        bad_streak = abs(latest_streak)    
+    
+    display_qol_score(score, good_streak, bad_streak)
 
 if __name__ == "__main__":
     main()
