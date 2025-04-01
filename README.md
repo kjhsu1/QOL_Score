@@ -4,7 +4,7 @@ Using Notion API, Python, Shell to calculate QOL score
 How to Use
 
 1. Go into terminal, run, ```git clone https://github.com/kjhsu1/QOL_Score.git```
-	- Make sure to go into ```/Users/<enter username here>/Downloads/``` to git clone
+	- Make sure to go into ```cd /Applications``` to git clone
 2. Open All_in_one_QOL_input_extraction.py and UI.py and change variable, ```user```
 	- ex. ```user = "Kenta"```
 

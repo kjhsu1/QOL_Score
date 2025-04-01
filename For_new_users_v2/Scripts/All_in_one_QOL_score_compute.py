@@ -10,8 +10,7 @@ from PIL import Image, ImageTk
 import random
 import requests
 
-username = os.getenv('USER')
-first_part_of_path = f"/Users/{username}/Downloads/QOL_Score/For_new_users_v2"
+first_part_of_path = "/Applications/QOL_Score/For_new_users_v2"
 
 # dict with all user info
 # includes "User Analysis Requests" database
