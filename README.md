@@ -3,15 +3,10 @@ Using Notion API, Python, Shell to calculate QOL score
 
 How to Use
 
-1. Get Notion, then
-	- Copy below page into your Notion
-		- https://www.notion.so/1924d9b143a980719cabc4f151bc30fb?v=1924d9b143a980dfb2ab000c90213282&pvs=4
-2. Create a Notion Integration 
-	- use this link https://www.notion.so/profile/integrations
-3. Add the database to the integration
-4. Go into terminal, run, ```git clone https://github.com/kjhsu1/QOL_Score.git```
+1. Go into terminal, run, ```git clone https://github.com/kjhsu1/QOL_Score.git```
 	- Make sure to go into ```/Users/<enter username here>/Downloads/``` to git clone
-5. Open All_in_one_QOL_input_extraction.py and UI.py and change NOTION_TOKEN and DATABASE_ID
+2. Open All_in_one_QOL_input_extraction.py and UI.py and change variable, ```user```
+	- ex. ```user = "Kenta"```
 
 *Note: New User Should download anaconda, then pip install all of the required modules using environment.yml
 - After downloading conda...
@@ -20,13 +15,12 @@ How to Use
 2. Then run ```conda activate QOL_env```
 	- QOL_env is the name of the env defined in the environment.yml file. 
 
-
 When Running Everday
 1. On Mac, go to Applications to open the Automater app.
 2. Create new "application"->go to search bar and type "Run Shell Script"
 	- the script should be
 	```
-	$HOME/Downloads/QOL_Score/For_new_users/run_ui.sh
+	$HOME/Downloads/QOL_Score/For_new_users_v2/run_ui.sh
 	```
 3. Save the application to desktop, you should now see it.
 	- if you double click, the app should run. 
