@@ -9,7 +9,7 @@ from PIL import Image, ImageTk
 import os
 
 username = os.getenv('USER')
-first_part_of_path = f"/Users/{username}/Downloads/QOL_Score/For_new_users_v2"
+first_part_of_path = f"/Applications/QOL_Score/For_new_users_v2"
 
 # dict with all user info
 all_users = {
@@ -106,7 +106,7 @@ def display_it(rank):
 	root.geometry("800x600")  # Set the window size to 800x600 pixels
 
 	# Load background
-	background_image = Image.open("/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Images/medalist.jpeg")
+	background_image = Image.open(f"{first_part_of_path}/Images/medalist.jpeg")
 	background_photo = ImageTk.PhotoImage(background_image)
 	background_label = tk.Label(root, image=background_photo)
 	background_label.place(relwidth=1, relheight=1)
