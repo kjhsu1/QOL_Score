@@ -85,27 +85,29 @@ def to_pst_isoformat(date_str):
     return local_time.isoformat()
 
 def update_notion_database(data):
-    url = f"https://api.notion.com/v1/pages"
+    url = "https://api.notion.com/v1/pages"
     payload = {
         "parent": {"database_id": DATABASE_ID},
         "properties": {
-            "Name": {"title": [{"text": {"content": data["entry_number"]}}]},
-            "Wake Time": {"date": {"start": to_pst_isoformat(data["wake_time"]).replace('-08:00', ''), "time_zone": "America/Los_Angeles"}},
-            "Sleep Time": {"date": {"start": to_pst_isoformat(data["sleep_time"]).replace('-08:00', ''), "time_zone": "America/Los_Angeles"}},
+            "Name": {"title": [{"text": {"content": str(data["entry_number"])}}]},
+            "Wake Time": {"date": {"start": to_pst_isoformat(data["wake_time"])}},
+            "Sleep Time": {"date": {"start": to_pst_isoformat(data["sleep_time"])}},
             "Exercise?": {"select": {"name": data["exercise"]}},
             "Went Outside?": {"select": {"name": data["outside"]}},
             "Talk to Someone?": {"select": {"name": data["talk"]}},
             "Min. on Social Media": {"number": int(data["social_media"])},
-            "Date": {"date": {"start": data["todays_date"] + "T00:00:00.000", "time_zone": "America/Los_Angeles"}},
+            # Pass todays_date through the ISO conversion function
+            "Date": {"date": {"start": to_pst_isoformat(data["todays_date"] + "T00:00:00")}},
             "Time Focused": {"number": int(data["time_focused"])},
             "Offday/Special Day?": {"select": {"name": data["offday_special_day"]}},
-            "QOL Score": {"number": int(data["qol_score"])}, # NEW ADDITION
-            "Streak": {"number": int(data["streak"])}, # NEW ADDITION
-            "Diary": {"rich_text": [{"text": {"content": str(data["diary"])}}]} # NEW ADDITION
+            "QOL Score": {"number": float(data["qol_score"])},
+            "Streak": {"number": int(data["streak"])},
+            "Diary": {"rich_text": [{"text": {"content": str(data["diary"])}}]}
         }
     }
     response = requests.post(url, json=payload, headers=headers)
     return response.status_code == 200
+
 
 def display_qol_score(data):
     def run_subprocess():
@@ -227,7 +229,7 @@ def get_values_from_user():
 # revised update_and_display_everything function
 def update_and_display_everything():
     data = get_values_from_user()
-    
+    #print(json.dumps(data, indent=4)) # debug
     # Check for None values instead of using all()
     if all(value is not None for value in data.values()):
         if update_notion_database(data):

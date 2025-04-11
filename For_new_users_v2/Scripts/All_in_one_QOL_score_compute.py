@@ -103,7 +103,6 @@ def calculate_qol_score(data):
 
     # Healthy Day or Productive Day
     if eff <= 0.6:  # healthy day
-        print("healthy day")
 
         # Calculate wake_time penalty
         wake_minutes_off = abs((wake_time_dt - ideal_wake_time).total_seconds() / 60)

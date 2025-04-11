@@ -77,31 +77,44 @@ def get_highest_entry_number():
 def to_pst_isoformat(date_str):
     local_time = datetime.fromisoformat(date_str)
     pst = pytz.timezone('America/Los_Angeles')
+    # Localize the naive datetime to PST
     local_time = pst.localize(local_time)
     return local_time.isoformat()
 
 def update_notion_database(data):
-    url = f"https://api.notion.com/v1/pages"
+    url = "https://api.notion.com/v1/pages"
     payload = {
         "parent": {"database_id": DATABASE_ID},
         "properties": {
-            "Name": {"title": [{"text": {"content": data["entry_number"]}}]},
-            "Wake Time": {"date": {"start": to_pst_isoformat(data["wake_time"]).replace('-08:00', ''), "time_zone": "America/Los_Angeles"}},
-            "Sleep Time": {"date": {"start": to_pst_isoformat(data["sleep_time"]).replace('-08:00', ''), "time_zone": "America/Los_Angeles"}},
+            "Name": {
+                "title": [{"text": {"content": str(data["entry_number"])}}]
+            },
+            "Wake Time": {
+                "date": {"start": to_pst_isoformat(data["wake_time"])}
+            },
+            "Sleep Time": {
+                "date": {"start": to_pst_isoformat(data["sleep_time"])}
+            },
             "Exercise?": {"select": {"name": data["exercise"]}},
             "Went Outside?": {"select": {"name": data["outside"]}},
             "Talk to Someone?": {"select": {"name": data["talk"]}},
             "Min. on Social Media": {"number": int(data["social_media"])},
-            "Date": {"date": {"start": data["todays_date"] + "T00:00:00.000", "time_zone": "America/Los_Angeles"}},
+            # Convert today's date by appending a time component and converting to PST ISO format.
+            "Date": {
+                "date": {"start": to_pst_isoformat(data["todays_date"] + "T00:00:00")}
+            },
             "Time Focused": {"number": int(data["time_focused"])},
             "Offday/Special Day?": {"select": {"name": data["offday_special_day"]}},
-            "QOL Score": {"number": int(data["qol_score"])}, # NEW ADDITION
-            "Streak": {"number": int(data["streak"])}, # NEW ADDITION
-            "Diary": {"rich_text": [{"text": {"content": str(data["diary"])}}]} # NEW ADDITION
+            "QOL Score": {"number": float(data["qol_score"])},
+            "Streak": {"number": int(data["streak"])},
+            "Diary": {
+                "rich_text": [{"text": {"content": str(data["diary"])}}]
+            }
         }
     }
     response = requests.post(url, json=payload, headers=headers)
     return response.status_code == 200
+
 
 def display_qol_score(data):
     def run_subprocess():
