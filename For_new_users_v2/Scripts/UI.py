@@ -97,7 +97,7 @@ def update_notion_database(data):
             "Talk to Someone?": {"select": {"name": data["talk"]}},
             "Min. on Social Media": {"number": int(data["social_media"])},
             # Pass todays_date through the ISO conversion function
-            "Date": {"date": {"start": to_pst_isoformat(data["todays_date"] + "T00:00:00")}},
+                "Date": {"date": {"start": to_pst_isoformat(data["todays_date"] + "T00:00:00")}},
             "Time Focused": {"number": int(data["time_focused"])},
             "Offday/Special Day?": {"select": {"name": data["offday_special_day"]}},
             "QOL Score": {"number": float(data["qol_score"])},
@@ -145,10 +145,13 @@ def fetch_past_entries(limit=14):
         score_property = properties.get("QOL Score", {}).get("number", 0)
         if date_property and score_property:
             entries.append((date_property, score_property))
+        if date_property and score_property == 0: # account for actual days with QOL_score=0
+            entries.append((date_property, score_property))
     return entries[::-1]  # Reverse to get chronological order
 
 def plot_qol_score():
     entries = fetch_past_entries(limit=14)
+    print(entries)
     if not entries:
         messagebox.showwarning("No Data", "No QOL data available to plot.")
         return
