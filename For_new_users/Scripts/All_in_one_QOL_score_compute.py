@@ -9,6 +9,7 @@ from tkinter import messagebox
 from PIL import Image, ImageTk
 import random
 import requests
+import QOL_LIB
 
 
 
@@ -73,102 +74,7 @@ def fetch_latest_streak():
     # Get the Streak property from the highest entry
     streak_property = highest_entry.get("properties", {}).get("Streak", {}).get("number", None)
     return streak_property
-
-def calculate_qol_score(data):
-    wake_time = data["Wake Times"][0]
-    sleep_time = data["Sleep Times"][0]
-
-    exercise = data["Exercise Values"][0]
-    outside = data["Went Outside Values"][0]
-    talk = data["Talk to Someone Values"][0]
-    social_media = int(data["Min. on Social Media Values"][0])
-    eff = data["Efficiency"][0]
-    offday_special_day = data["Offday/Special Day?"][0]
-
-    score = 100
-
-    # Extract time from datetime string
-    wake_time_dt = datetime.strptime(wake_time, "%Y-%m-%dT%H:%M:%S.%f%z")
     
-    # Check if sleep_time is empty and handle it
-    if sleep_time:
-        sleep_time_dt = datetime.strptime(sleep_time, "%Y-%m-%dT%H:%M:%S.%f%z")
-        # Adjust for next day sleep times
-        if sleep_time_dt < wake_time_dt:
-            sleep_time_dt += timedelta(days=1)
-    else:
-        sleep_time_dt = wake_time_dt + timedelta(hours=8)  # Default to 8 hours after wake time
-
-    # Ideal wake and sleep times
-    ideal_wake_time = wake_time_dt.replace(hour=8, minute=30, second=0, microsecond=0)
-    ideal_sleep_time = sleep_time_dt.replace(hour=23, minute=59, second=0, microsecond=0)
-
-    # Healthy Day or Productive Day
-    if eff <= 0.6:  # healthy day
-
-        # Calculate wake_time penalty
-        wake_minutes_off = abs((wake_time_dt - ideal_wake_time).total_seconds() / 60)
-        score -= min(wake_minutes_off * 0.2, 15)
-
-        # Calculate sleep_time penalty
-        sleep_minutes_off = abs((sleep_time_dt - ideal_sleep_time).total_seconds() / 60)
-        score -= min(sleep_minutes_off * 0.2, 15)
-
-        # Exercise penalty
-        if exercise == "No":
-            score -= 10
-
-        # Outside penalty
-        if outside == "No":
-            score -= 10
-
-        # Talk penalty
-        if talk == "No":
-            score -= 10
-
-        # Social media penalty
-        if social_media > 45:
-            score -= (social_media - 45) * 0.2
-
-        # Efficiency penalty
-        if eff < 0.6:
-            eff_diff = 0.6 - eff
-            score -= (eff_diff / 0.1) * 10
-
-        if score < 0:
-            score = 0
-    else:
-        print("productive day")
-
-        # Calculate wake_time penalty
-        wake_minutes_off = abs((wake_time_dt - ideal_wake_time).total_seconds() / 60)
-        # print(wake_minutes_off)
-        score -= min(wake_minutes_off * 0.2, 15)
-        # print(score)
-
-        # Calculate sleep_time penalty
-        sleep_minutes_off = abs((sleep_time_dt - ideal_sleep_time).total_seconds() / 60)
-        score -= min(sleep_minutes_off * 0.2, 15)
-        # print(score)
-
-        # Social media penalty
-        if social_media > 45:
-            score -= (social_media - 45) * 0.2
-
-        # Efficiency penalty
-        if eff < 0.8:
-            eff_diff = 0.8 - eff
-            score -= (eff_diff / 0.1) * 15
-
-        if score < 0:
-            score = 0
-    
-    # if offday or special day, then that day's score is 100
-    if offday_special_day == "Yes":
-        score = 100
-
-    return score
-
 # Function to display QOL score and streak with a background image and custom font
 def display_qol_score(score, good_streak, bad_streak):
     root = tk.Tk()
@@ -232,6 +138,35 @@ def display_qol_score(score, good_streak, bad_streak):
 
     root.mainloop()
 
+def fetch_latest_qol_score():
+    """
+    Query the Notion database and return the QOL Score
+    of the entry with the highest numerical 'Name' value.
+    """
+    url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
+    response = requests.post(url, headers=headers)
+    data = response.json()
+    results = data.get("results", [])
+
+    if not results:
+        return None
+
+    # Find the entry whose Name title is largest when interpreted as an integer
+    highest_entry = max(
+        results,
+        key=lambda x: int(
+            x["properties"]
+             .get("Name", {})
+             .get("title", [{}])[0]
+             .get("plain_text", "0")
+        )
+    )
+
+    # Extract the QOL Score property
+    return highest_entry.get("properties", {}) \
+                        .get("QOL Score", {}) \
+                        .get("number", None)
+
 def main():
     input_json = sys.stdin.read()
     
@@ -241,7 +176,7 @@ def main():
     
     data = json.loads(input_json)
 
-    score = calculate_qol_score(data)
+    score = fetch_latest_qol_score()
 
     # Track streaks
     latest_streak = fetch_latest_streak()
