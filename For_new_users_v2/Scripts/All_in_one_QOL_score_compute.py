@@ -15,7 +15,7 @@ import requests
 # !!!!!!!!!!! CHANGE THIS FOR OTHER USERS !!!!!!!!!!!!!!
 user = "Kenta"
 
-first_part_of_path = "/Applications/QOL_Score/For_new_users_v2"
+# first_part_of_path = "/Applications/QOL_Score/For_new_users_v2"
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 

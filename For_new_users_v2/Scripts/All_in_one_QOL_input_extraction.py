@@ -8,6 +8,7 @@ import os
 # !!!!!!!!!!!! CHANGE THIS FOR OTHER USERS !!!!!!!!!!!
 user = "Kenta"
 
+
 # dict with all user info
 # includes "User Analysis Requests" database
 all_users = {
@@ -27,9 +28,6 @@ all_users = {
     }
 
 }
-
-# assuming you git clone directory in Applications...
-first_part_of_path = "/Applications/QOL_Score/For_new_users_v2"
 
 DATABASE_ID = all_users[user]["DATABASE_ID"]
 NOTION_TOKEN = all_users[user]["NOTION_TOKEN"]
