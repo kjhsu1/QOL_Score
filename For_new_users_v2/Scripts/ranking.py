@@ -9,7 +9,10 @@ from PIL import Image, ImageTk
 import os
 
 username = os.getenv('USER')
-first_part_of_path = f"/Applications/QOL_Score/For_new_users_v2"
+
+base_dir = os.path.dirname(os.path.abspath(__file__))
+
+# first_part_of_path = f"/Applications/QOL_Score/For_new_users_v2"
 
 # dict with all user info
 all_users = {
@@ -106,13 +109,13 @@ def display_it(rank):
 	root.geometry("800x600")  # Set the window size to 800x600 pixels
 
 	# Load background
-	background_image = Image.open(f"{first_part_of_path}/Images/medalist.jpeg")
+	background_image = Image.open(f"{base_dir}/../Images/medalist.jpeg")
 	background_photo = ImageTk.PhotoImage(background_image)
 	background_label = tk.Label(root, image=background_photo)
 	background_label.place(relwidth=1, relheight=1)
 
 	# Set retro font
-	font_path = f"{first_part_of_path}/Text_Files/Press_Start_2P/PressStart2P-Regular.ttf"
+	font_path = f"{base_dir}/../Text_Files/Press_Start_2P/PressStart2P-Regular.ttf"
 	root.option_add("*Font", tkFont.Font(family="Press Start 2P", size=25))
 	retro_font = tkFont.Font(family="Press Start 2P", size=25)
 
@@ -136,7 +139,7 @@ def display_it(rank):
 		create_ranking_label(i + 1, name, score)
 
 	# Add pixel game-themed images (if provided)
-	images = [f"{first_part_of_path}/Images/gold_medal.jpg", f"{first_part_of_path}/Images/silver_medal.jpg", f"{first_part_of_path}/Images/bronze_medal.jpg"]
+	images = [f"{base_dir}/../Images/gold_medal.jpg", f"{base_dir}/../Images/silver_medal.jpg", f"{base_dir}/../Images/bronze_medal.jpg"]
 	for i, image_path in enumerate(images):
 		try:
 			print(f"Loading image: {image_path}")
