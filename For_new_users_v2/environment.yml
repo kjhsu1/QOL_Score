@@ -1,4 +1,4 @@
-name: your_env_name
+name: QOL_env
 channels:
   - defaults
 dependencies:
@@ -6,3 +6,4 @@ dependencies:
   - requests
   - pytz
   - pillow  # For PIL (Pillow is the fork of PIL)
+  - matplotlib
