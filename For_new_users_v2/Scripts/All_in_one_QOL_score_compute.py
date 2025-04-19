@@ -17,6 +17,8 @@ user = "Kenta"
 
 first_part_of_path = "/Applications/QOL_Score/For_new_users_v2"
 
+base_dir = os.path.dirname(os.path.abspath(__file__))
+
 # dict with all user info
 # includes "User Analysis Requests" database
 all_users = {
@@ -177,7 +179,7 @@ def display_qol_score(score, good_streak, bad_streak):
 
     # Set background image (ensure the correct path to your background image)
     username = os.getenv('USER') # get username (ex. /Users/kentahsu)
-    background_image_path = f"{first_part_of_path}/Images/boyyaky.jpg"
+    background_image_path = f"{base_dir}/../Images/boyyaky.jpg"
     
     if not os.path.exists(background_image_path):
         print(f"Background image not found: {background_image_path}")
@@ -229,59 +231,6 @@ def display_qol_score(score, good_streak, bad_streak):
         message_label.pack(pady=20)
 
     root.mainloop()
-
-# Main function to read JSON data and calculate/display QOL score and streaks
-
-    input_json = sys.stdin.read()
-    
-    if not input_json.strip():
-        print("No input data provided.")
-        return
-    
-    data = json.loads(input_json)
-
-    score = calculate_qol_score(data)
-
-    # Track streaks
-    streak_file = f"{first_part_of_path}/streaks.json"
-
-    # Initialize streaks data
-    if not os.path.exists(streak_file):
-        streaks = {"good_streak": 0, "bad_streak": 0, "last_score": None, "last_update": ""}
-    else:
-        with open(streak_file, 'r') as file:
-            streaks = json.load(file)
-
-    today_date_str = datetime.now().strftime("%Y-%m-%d")
-
-    # Ensure 'last_update' key exists in streaks dictionary to avoid KeyError
-    if 'last_update' not in streaks:
-        streaks['last_update'] = ""
-
-    # Check if the streaks were updated today
-    if streaks["last_update"] != today_date_str:
-        # Update streaks only if they were not updated today
-        if score >= 65:
-            if streaks["last_score"] is not None and streaks["last_score"] >= 80:
-                streaks["good_streak"] += 1
-            else:
-                streaks["good_streak"] = 1
-            streaks["bad_streak"] = 0
-        else:
-            if streaks["last_score"] is not None and streaks["last_score"] < 80:
-                streaks["bad_streak"] += 1
-            else:
-                streaks["bad_streak"] = 1
-            streaks["good_streak"] = 0
-
-        streaks["last_score"] = score
-        streaks["last_update"] = today_date_str
-
-        # Save streaks data only if updated today
-        with open(streak_file, 'w') as file:
-            json.dump(streaks, file, indent=4)
-
-    display_qol_score(score, streaks['good_streak'], streaks['bad_streak'])
 
 def main():
     input_json = sys.stdin.read()
