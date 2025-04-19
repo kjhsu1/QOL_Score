@@ -20,7 +20,7 @@ When Running Everday
 2. Create new "application"->go to search bar and type "Run Shell Script"
 	- the script should be
 	```
-	/Applications/QOL_Score/For_new_users_v2/run_ui.sh
+	/Applications/QOL_Score/For_new_users/run_ui.sh
 	```
 3. Save the application to desktop, you should now see it.
 	- if you double click, the app should run. 
