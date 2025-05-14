@@ -101,7 +101,7 @@ def calculate_qol_score(data):
             score -= (social_media - 45) * 0.2
 
         # Efficiency penalty
-        if eff < 0.8:
+        if eff < 0.65:
             eff_diff = 0.8 - eff
             score -= (eff_diff / 0.1) * 15
 
