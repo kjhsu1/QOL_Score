@@ -40,8 +40,6 @@ def calculate_qol_score(data):
     
     if sleep_time_dt < wake_time_dt:
             sleep_time_dt += timedelta(days=1)
-    else:
-        sleep_time_dt = wake_time_dt + timedelta(hours=8)  # Default to 8 hours after wake time
 
     # Ideal wake and sleep times
     ideal_wake_time = wake_time_dt.replace(hour=8, minute=30, second=0, microsecond=0)
