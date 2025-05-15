@@ -1,0 +1,10 @@
+# Don't track the hidden files 
+# DS_Store is a mac thing; stores Finder settings for the folder; icon positions, sorting prefs
+.DS_Store
+
+# ignore pycache
+# pycache; bytecode compiles python modules (like QOL_LIB.py) so it can run faster
+# auto generated file and directory when python module exists in git repo
+__pycache__/
+*.pyc
+
