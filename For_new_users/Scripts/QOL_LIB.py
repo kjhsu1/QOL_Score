@@ -48,7 +48,7 @@ def calculate_qol_score(data):
     ideal_sleep_time = sleep_time_dt.replace(hour=23, minute=59, second=0, microsecond=0)
 
     # Healthy Day or Productive Day
-    if eff <= 0.6:  # healthy day
+    if eff < 0.6:  # healthy day
         print("healthy day")
 
         # Calculate wake_time penalty
@@ -101,8 +101,8 @@ def calculate_qol_score(data):
             score -= (social_media - 45) * 0.2
 
         # Efficiency penalty
-        if eff < 0.65:
-            eff_diff = 0.8 - eff
+        if eff < 0.70:
+            eff_diff = 0.7 - eff
             score -= (eff_diff / 0.1) * 15
 
         if score < 0:
