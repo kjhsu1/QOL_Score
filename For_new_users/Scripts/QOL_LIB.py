@@ -27,7 +27,6 @@ def calculate_qol_score(data):
     sleep_time_dt = datetime.strptime(sleep_time, "%Y-%m-%dT%H:%M:%S")
     minutes_awake = (sleep_time_dt - wake_time_dt).total_seconds() / 60
 
-
     exercise = data["exercise"]
     outside = data["outside"]
     talk = data["talk"]
@@ -37,9 +36,9 @@ def calculate_qol_score(data):
     offday_special_day = data["offday_special_day"]
 
     score = 100
-    
+
     if sleep_time_dt < wake_time_dt:
-            sleep_time_dt += timedelta(days=1)
+        sleep_time_dt += timedelta(days=1)
 
     # Ideal wake and sleep times
     ideal_wake_time = wake_time_dt.replace(hour=8, minute=30, second=0, microsecond=0)
@@ -49,8 +48,9 @@ def calculate_qol_score(data):
     if eff < 0.6:  # healthy day
         print("healthy day")
 
-        # Calculate wake_time penalty
-        wake_minutes_off = abs((wake_time_dt - ideal_wake_time).total_seconds() / 60)
+        # Calculate wake_time penalty (only for waking later than ideal)
+        wake_diff_minutes = (wake_time_dt - ideal_wake_time).total_seconds() / 60
+        wake_minutes_off = max(wake_diff_minutes, 0)
         score -= min(wake_minutes_off * 0.2, 15)
 
         # Calculate sleep_time penalty
@@ -69,30 +69,19 @@ def calculate_qol_score(data):
         if talk == "No":
             score -= 10
 
-        # Social media penalty
-        if social_media > 45:
-            score -= (social_media - 45) * 0.2
-
-        # Efficiency penalty
-        if eff < 0.6:
-            eff_diff = 0.6 - eff
-            score -= (eff_diff / 0.1) * 10
-
         if score < 0:
             score = 0
     else:
         print("productive day")
 
-        # Calculate wake_time penalty
-        wake_minutes_off = abs((wake_time_dt - ideal_wake_time).total_seconds() / 60)
-        # print(wake_minutes_off)
+        # Calculate wake_time penalty (only for waking later than ideal)
+        wake_diff_minutes = (wake_time_dt - ideal_wake_time).total_seconds() / 60
+        wake_minutes_off = max(wake_diff_minutes, 0)
         score -= min(wake_minutes_off * 0.2, 15)
-        # print(score)
 
         # Calculate sleep_time penalty
         sleep_minutes_off = abs((sleep_time_dt - ideal_sleep_time).total_seconds() / 60)
         score -= min(sleep_minutes_off * 0.2, 15)
-        # print(score)
 
         # Social media penalty
         if social_media > 45:
@@ -105,7 +94,7 @@ def calculate_qol_score(data):
 
         if score < 0:
             score = 0
-    
+
     # if offday or special day, then that day's score is 100
     if offday_special_day == "Yes":
         score = 100
