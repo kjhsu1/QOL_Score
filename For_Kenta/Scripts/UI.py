@@ -14,6 +14,7 @@ import threading
 import subprocess
 from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
+import random
 import QOL_LIB # my homemade library 
 
 
@@ -117,18 +118,58 @@ def update_notion_database(data):
 
 
 def display_qol_score(data):
-    def run_subprocess():
-        username = os.getenv('USER')
-        try:
-            result = subprocess.run(["python3", f"/Users/kentahsu/Code/Personal/QOL_Score/For_Kenta/Scripts/All_in_one_QOL_input_extraction_kenta_version.py", entry_number_entry.get()], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-            subprocess.run(["python3", f"/Users/{username}/Code/Personal/QOL_Score/For_Kenta/Scripts/All_in_one_QOL_score_compute_kenta_version.py"], input=result.stdout, text=True, check=True)
+    score = data.get("qol_score")
+    streak = data.get("streak")
 
-        except subprocess.CalledProcessError as e:
-            print(f"Subprocess failed: {e.stderr}")
-            messagebox.showerror("Error", f"Subprocess failed: {e.stderr}")
+    if score is None or streak is None:
+        messagebox.showerror("Error", "Missing QOL score or streak information.")
+        return
 
-    thread = threading.Thread(target=run_subprocess)
-    thread.start()
+    score_window = tk.Toplevel(root)
+    score_window.title("QOL Score")
+    score_window.geometry("800x600")
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    images_dir = os.path.join(os.path.dirname(script_dir), "Images")
+    background_path = os.path.join(images_dir, "boyyaky.jpg")
+
+    if os.path.exists(background_path):
+        background_image = Image.open(background_path)
+        background_photo = ImageTk.PhotoImage(background_image)
+        score_window.background_photo = background_photo  # Prevent garbage collection
+        background_label = tk.Label(score_window, image=background_photo)
+        background_label.place(relwidth=1, relheight=1)
+
+    custom_font = ("Comic Sans MS", 24, "bold")
+
+    tk.Label(score_window, text=f"QOL Score: {score}", font=custom_font, bg="white", fg="black").pack(pady=20)
+
+    good_streak = max(streak, 0)
+    bad_streak = abs(min(streak, 0))
+
+    tk.Label(score_window, text=f"Good Streak: {good_streak}", font=custom_font, bg="white", fg="black").pack(pady=10)
+    tk.Label(score_window, text=f"Bad Streak: {bad_streak}", font=custom_font, bg="white", fg="black").pack(pady=10)
+
+    good_streak_messages = [
+        "You just a chill guy like that. Keep at it my friend.",
+        "君の未来は明るい",
+        "そなたは美しい"
+    ]
+
+    bad_streak_messages = [
+        "ggs my friend, on to the next",
+        "my guy, tomorrow's gonna be a better day.",
+        "オワコンやんけ"
+    ]
+
+    if bad_streak > good_streak:
+        message_text = random.choice(bad_streak_messages)
+        message_color = "red"
+    else:
+        message_text = random.choice(good_streak_messages)
+        message_color = "black"
+
+    tk.Label(score_window, text=message_text, font=custom_font, bg="white", fg=message_color).pack(pady=20)
 
 def resize_image(image_path, width, height):
     image = Image.open(image_path)
@@ -241,7 +282,7 @@ def update_and_display_everything():
     if all(value is not None for value in data.values()):
         if update_notion_database(data):
             messagebox.showinfo("Success", "Data updated successfully!")
-            display_qol_score(data["entry_number"])
+            display_qol_score(data)
         else:
             messagebox.showerror("Error", "Failed to update Notion database.")
     else:
