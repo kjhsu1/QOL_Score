@@ -27,3 +27,5 @@ When Running Everday
 
 
 *NOTE: If you want to run run_this_everyday.sh in the Archive directory properly, you need to take out all the files in Archive directory and move it to the QOL_Score directory again.
+
+# testing (delete later)
