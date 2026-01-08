@@ -137,6 +137,7 @@ efficiency_values = extract_efficiency_values(all_in_one_pages, entry_number)
 #print_first_page_properties(qol_pages)
 
 all_values = {
+    "Entry Number": entry_number,
     "Wake Times": wake_times,
     "Sleep Times": sleep_times,
     "Exercise Values": exercise_values,
@@ -149,7 +150,6 @@ all_values = {
 
 json_string = json.dumps(all_values, indent=4)
 print(json_string)
-
 
 
 

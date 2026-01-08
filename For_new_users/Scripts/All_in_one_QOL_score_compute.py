@@ -172,6 +172,26 @@ def fetch_latest_qol_score():
                         .get("QOL Score", {}) \
                         .get("number", None)
 
+def fetch_qol_score_by_entry_number(entry_number):
+    url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
+    payload = {
+        "filter": {
+            "property": "Name",
+            "title": {
+                "equals": str(entry_number)
+            }
+        }
+    }
+    response = requests.post(url, headers=headers, json=payload)
+    data = response.json()
+    results = data.get("results", [])
+
+    if not results:
+        return None
+
+    properties = results[0].get("properties", {})
+    return properties.get("QOL Score", {}).get("number", None)
+
 def main():
     input_json = sys.stdin.read()
     
@@ -181,7 +201,12 @@ def main():
     
     data = json.loads(input_json)
 
-    score = fetch_latest_qol_score()
+    entry_number = data.get("Entry Number")
+    score = None
+    if entry_number:
+        score = fetch_qol_score_by_entry_number(entry_number)
+    if score is None:
+        score = fetch_latest_qol_score()
 
     # Track streaks
     latest_streak = fetch_latest_streak()
@@ -198,7 +223,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 
 
