@@ -72,18 +72,25 @@ ar_headers = {
 
 def get_highest_entry_number():
     url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
-    response = requests.post(url, headers=headers)
-    data = response.json()
-    results = data.get("results", [])
-    
     max_entry_number = 0
-    for page in results:
-        properties = page.get("properties", {})
-        name_property = properties.get("Name", {}).get("title", [])
-        if name_property:
-            entry_number = int(name_property[0].get("plain_text", 0))
-            if entry_number > max_entry_number:
-                max_entry_number = entry_number
+    has_more = True
+    start_cursor = None
+    while has_more:
+        payload = {"page_size": 100}
+        if start_cursor:
+            payload["start_cursor"] = start_cursor
+        response = requests.post(url, headers=headers, json=payload)
+        data = response.json()
+        results = data.get("results", [])
+        for page in results:
+            properties = page.get("properties", {})
+            name_property = properties.get("Name", {}).get("title", [])
+            if name_property:
+                entry_number = int(name_property[0].get("plain_text", 0))
+                if entry_number > max_entry_number:
+                    max_entry_number = entry_number
+        has_more = data.get("has_more", False)
+        start_cursor = data.get("next_cursor")
     return max_entry_number
 
 def to_pst_isoformat(date_str):

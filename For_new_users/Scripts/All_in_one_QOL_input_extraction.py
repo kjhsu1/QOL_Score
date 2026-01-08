@@ -51,13 +51,20 @@ entry_number = str(sys.argv[1])
 def get_pages(database_id):
     url = f"https://api.notion.com/v1/databases/{database_id}/query"
 
-    payload = {"page_size": 100}
-    response = requests.post(url, json=payload, headers=headers)
-
-    data = response.json()
-
-    results = data["results"]
-    return results
+    all_results = []
+    has_more = True
+    start_cursor = None
+    while has_more:
+        payload = {"page_size": 100}
+        if start_cursor:
+            payload["start_cursor"] = start_cursor
+        response = requests.post(url, json=payload, headers=headers)
+        data = response.json()
+        results = data.get("results", [])
+        all_results.extend(results)
+        has_more = data.get("has_more", False)
+        start_cursor = data.get("next_cursor")
+    return all_results
 
 # Extract values from the Awake Minutes database
 def extract_awake_minutes_values(pages, entry_number):
@@ -149,7 +156,6 @@ all_values = {
 
 json_string = json.dumps(all_values, indent=4)
 print(json_string)
-
 
 
 
