@@ -6,7 +6,7 @@ import sys
 import os
 
 # !!!!!!!!!!!! CHANGE THIS FOR OTHER USERS !!!!!!!!!!!
-user = "Kenta"
+user = "Kazuma"
 
 
 # dict with all user info

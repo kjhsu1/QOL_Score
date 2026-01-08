@@ -18,7 +18,7 @@ import QOL_LIB # my homemade library
 
 
 # !!!!!! CHANGE THIS FOR OTHER USERS !!!!!!!
-user = "Kenta"
+user = "Kazuma"
 
 # dict with all user info
 # includes "User Analysis Requests" database
