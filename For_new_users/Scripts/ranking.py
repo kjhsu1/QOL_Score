@@ -17,7 +17,7 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 # dict with all user info
 all_users = {
     "Kenta": {
-        "NOTION_TOKEN": "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",
+        "NOTION_TOKEN": "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",
         "DATABASE_ID": "1924d9b143a980719cabc4f151bc30fb"
     },
 

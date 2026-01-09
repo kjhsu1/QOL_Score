@@ -18,13 +18,13 @@ import QOL_LIB # my homemade library
 
 
 # !!!!!! CHANGE THIS FOR OTHER USERS !!!!!!!
-user = "Kazuma"
+user = "Kenta"
 
 # dict with all user info
 # includes "User Analysis Requests" database
 all_users = {
     "Kenta": {
-        "NOTION_TOKEN": "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",
+        "NOTION_TOKEN": "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",
         "DATABASE_ID": "1924d9b143a980719cabc4f151bc30fb"
     },
 
@@ -111,8 +111,7 @@ def update_notion_database(data):
             "Went Outside?": {"select": {"name": data["outside"]}},
             "Talk to Someone?": {"select": {"name": data["talk"]}},
             "Min. on Social Media": {"number": int(data["social_media"])},
-            # Pass todays_date through the ISO conversion function
-                "Date": {"date": {"start": to_pst_isoformat(data["todays_date"] + "T00:00:00")}},
+            "Date": {"date": {"start": to_pst_isoformat(data["todays_date"] + "T00:00:00")}},
             "Time Focused": {"number": int(data["time_focused"])},
             "Offday/Special Day?": {"select": {"name": data["offday_special_day"]}},
             "QOL Score": {"number": float(data["qol_score"])},
@@ -120,8 +119,21 @@ def update_notion_database(data):
             "Diary": {"rich_text": [{"text": {"content": str(data["diary"])}}]}
         }
     }
-    response = requests.post(url, json=payload, headers=headers)
-    return response.status_code == 200
+
+    try:
+        response = requests.post(url, json=payload, headers=headers, timeout=20)
+    except Exception as e:
+        return False, f"Request failed: {e}"
+
+    if response.status_code in (200, 201):
+        return True, None
+
+    # surface Notion’s real error message
+    try:
+        return False, f"{response.status_code}: {response.json()}"
+    except Exception:
+        return False, f"{response.status_code}: {response.text}"
+
 
 
 def display_qol_score(data):
@@ -150,9 +162,14 @@ def fetch_past_entries(limit=14):
         "page_size": limit,
         "sorts": [{"property": "Date", "direction": "descending"}]
     }
-    response = requests.post(url, headers=headers, json=payload)
-    data = response.json()
-    results = data.get("results", [])
+    response = requests.post(url, headers=headers, json=payload, timeout=20)
+    if response.status_code != 200:
+        try:
+            messagebox.showerror("Notion Error", f"{response.status_code}: {response.json()}")
+        except Exception:
+            messagebox.showerror("Notion Error", f"{response.status_code}: {response.text}")
+        return []
+
     
     entries = []
     for page in results:
@@ -209,55 +226,71 @@ def fetch_streak_by_name(entry_name):
 # gets all user input data into a single dictionary
 # also adds QOL score and streak value as well
 # returns that dictionary
-def get_values_from_user():    
+def get_values_from_user():
+    # basic input fetch
+    entry_number_raw = entry_number_entry.get().strip()
+
+    # validate entry number
+    try:
+        entry_num = int(entry_number_raw)
+    except ValueError:
+        raise ValueError("Entry Number must be an integer.")
+
+    # validate required numeric fields early (so you get a popup instead of silent failure)
+    social_raw = social_media_entry.get().strip()
+    focused_raw = time_focused_entry.get().strip()
+    if social_raw == "" or focused_raw == "":
+        raise ValueError("Please fill out 'Min. on Social Media' and 'Time Focused' (numbers).")
+
+    try:
+        int(social_raw)
+        int(focused_raw)
+    except ValueError:
+        raise ValueError("'Min. on Social Media' and 'Time Focused' must be integers.")
+
     data = {
-        "entry_number": entry_number_entry.get(),
-        "wake_time": wake_time_entry.get(),
-        "sleep_time": sleep_time_entry.get(),
+        "entry_number": str(entry_num),
+        "wake_time": wake_time_entry.get().strip(),
+        "sleep_time": sleep_time_entry.get().strip(),
         "exercise": exercise_var.get(),
         "outside": outside_var.get(),
         "talk": talk_var.get(),
-        "social_media": social_media_entry.get(),
-        "todays_date": todays_date_entry.get(),
-        "time_focused": time_focused_entry.get(),
+        "social_media": social_raw,
+        "todays_date": todays_date_entry.get().strip(),
+        "time_focused": focused_raw,
         "offday_special_day": offday_special_day_var.get(),
-        "diary": diary_entry.get()
+        "diary": diary_entry.get().strip()
     }
-    # add qol
+
+    # compute qol (can still raise if datetime formats are wrong)
     qol_score = QOL_LIB.calculate_qol_score(data)
     data["qol_score"] = round(qol_score, 1)
-    
-    # add streak
-    current_streak = 0
-    previous_streak = int(fetch_streak_by_name(str(int(data["entry_number"])-1)))
-    if data["qol_score"] >= 65:
-        if previous_streak <= 0:
-            current_streak = 1
-        if previous_streak > 0:
-            current_streak = previous_streak + 1
-    if data["qol_score"] < 65:
-        if previous_streak <= 0:
-            current_streak = previous_streak - 1
-        if previous_streak > 0:
-            current_streak = -1
 
-    data["streak"] = current_streak
+    # safe streak calc (handle empty DB / missing previous entry)
+    prev_name = str(entry_num - 1)
+    prev_streak_val = fetch_streak_by_name(prev_name)
+    previous_streak = int(prev_streak_val) if prev_streak_val is not None else 0
+
+    if data["qol_score"] >= 65:
+        data["streak"] = 1 if previous_streak <= 0 else previous_streak + 1
+    else:
+        data["streak"] = (previous_streak - 1) if previous_streak <= 0 else -1
 
     return data
 
-# revised update_and_display_everything function
+
 def update_and_display_everything():
-    data = get_values_from_user()
-    #print(json.dumps(data, indent=4)) # debug
-    # Check for None values instead of using all()
-    if all(value is not None for value in data.values()):
-        if update_notion_database(data):
+    try:
+        data = get_values_from_user()
+        ok, err = update_notion_database(data)
+        if ok:
             messagebox.showinfo("Success", "Data updated successfully!")
-            display_qol_score(data["entry_number"])
+            display_qol_score(data)  # (your function ignores the arg anyway)
         else:
-            messagebox.showerror("Error", "Failed to update Notion database.")
-    else:
-        messagebox.showwarning("Incomplete Data", "Please fill out all fields.")
+            messagebox.showerror("Notion Error", err or "Failed to update Notion database.")
+    except Exception as e:
+        messagebox.showerror("Submit Failed", str(e))
+
 
 def run_ranking_as_subprocess():
     def run_ranking():
