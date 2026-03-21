@@ -12,6 +12,7 @@ import pytz
 import os
 import threading
 import subprocess
+import random
 from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
 import QOL_LIB # my homemade library 
@@ -24,22 +25,22 @@ user = "Kenta"
 # includes "User Analysis Requests" database
 all_users = {
     "Kenta": {
-        "NOTION_TOKEN": "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",
+        "NOTION_TOKEN": "YOUR_NOTION_TOKEN_HERE",
         "DATABASE_ID": "1924d9b143a980719cabc4f151bc30fb"
     },
 
     "Kazuma":{
-        "NOTION_TOKEN": "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",
+        "NOTION_TOKEN": "YOUR_NOTION_TOKEN_HERE",
         "DATABASE_ID": "1954d9b143a981019212fbe32c21a6a1" 
     },
 
     "Eoin":{
-        "NOTION_TOKEN": "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",
+        "NOTION_TOKEN": "YOUR_NOTION_TOKEN_HERE",
         "DATABASE_ID": "1f44d9b143a980559a2bffbe8e7ab9b5" 
     },
 
     "User_Analysis_Requests_Database":{
-        "NOTION_TOKEN": "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",
+        "NOTION_TOKEN": "YOUR_NOTION_TOKEN_HERE",
         "DATABASE_ID": "1ad4d9b143a980e7806ece9c6a0eb626"
     }
 
@@ -79,7 +80,18 @@ def get_highest_entry_number():
         payload = {"page_size": 100}
         if start_cursor:
             payload["start_cursor"] = start_cursor
-        response = requests.post(url, headers=headers, json=payload)
+        try:
+            response = requests.post(url, headers=headers, json=payload, timeout=20)
+        except Exception as e:
+            raise RuntimeError(f"Unable to reach Notion while loading entry numbers: {e}")
+
+        if response.status_code != 200:
+            try:
+                detail = response.json()
+            except Exception:
+                detail = response.text
+            raise RuntimeError(f"Notion rejected the entry lookup ({response.status_code}): {detail}")
+
         data = response.json()
         results = data.get("results", [])
         for page in results:
@@ -135,21 +147,72 @@ def update_notion_database(data):
         return False, f"{response.status_code}: {response.text}"
 
 
+def build_default_datetime_strings(now=None):
+    if now is None:
+        now = datetime.now()
+
+    today = now.strftime("%Y-%m-%d")
+    return {
+        "wake_time": f"{today}T08:00:00",
+        "sleep_time": f"{today}T23:00:00",
+        "todays_date": today,
+    }
+
 
 def display_qol_score(data):
-    def run_subprocess():
-        username = os.getenv('USER')
-        try:
-            #result = subprocess.run(["python3", f"{first_part_of_path}/Scripts/All_in_one_QOL_input_extraction.py", entry_number_entry.get()], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-            result = subprocess.run(["python3", f"{base_dir}/All_in_one_QOL_input_extraction.py", entry_number_entry.get()], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-            subprocess.run(["python3", f"{base_dir}/All_in_one_QOL_score_compute.py"], input=result.stdout, text=True, check=True)
+    score = data["qol_score"]
+    streak = int(data["streak"])
+    good_streak = streak if streak > 0 else 0
+    bad_streak = abs(streak) if streak < 0 else 0
 
-        except subprocess.CalledProcessError as e:
-            print(f"Subprocess failed: {e.stderr}")
-            messagebox.showerror("Error", f"Subprocess failed: {e.stderr}")
+    score_window = tk.Toplevel(root)
+    score_window.title("QOL Score")
+    score_window.geometry("800x600")
 
-    thread = threading.Thread(target=run_subprocess)
-    thread.start()
+    background_image_path = f"{base_dir}/../Images/boyyaky.jpg"
+    if not os.path.exists(background_image_path):
+        messagebox.showerror("Error", f"Background image not found: {background_image_path}")
+        score_window.destroy()
+        return
+
+    background_image = Image.open(background_image_path)
+    background_photo = ImageTk.PhotoImage(background_image)
+    score_window.background_photo = background_photo
+
+    background_label = tk.Label(score_window, image=background_photo)
+    background_label.place(relwidth=1, relheight=1)
+
+    custom_font = ("Comic Sans MS", 24, "bold")
+
+    qol_score_label = tk.Label(score_window, text=f"QOL Score: {score}", font=custom_font, bg="white", fg="black")
+    qol_score_label.pack(pady=20)
+
+    good_streak_label = tk.Label(score_window, text=f"Good Streak: {good_streak}", font=custom_font, bg="white", fg="black")
+    good_streak_label.pack(pady=10)
+
+    bad_streak_label = tk.Label(score_window, text=f"Bad Streak: {bad_streak}", font=custom_font, bg="white", fg="black")
+    bad_streak_label.pack(pady=10)
+
+    good_streak_messages = [
+        "You just a chill guy like that. Keep at it my friend.",
+        "君の未来は明るい",
+        "そなたは美しい"
+    ]
+
+    bad_streak_messages = [
+        "ggs my friend, on to the next",
+        "my guy, tomorrow's gonna be a better day.",
+        "オワコンやんけ"
+    ]
+
+    if bad_streak > good_streak:
+        message_text = random.choice(bad_streak_messages)
+        message_label = tk.Label(score_window, text=message_text, font=custom_font, bg="white", fg="red")
+    else:
+        message_text = random.choice(good_streak_messages)
+        message_label = tk.Label(score_window, text=message_text, font=custom_font, bg="white", fg="black")
+
+    message_label.pack(pady=20)
 
 def resize_image(image_path, width, height):
     image = Image.open(image_path)
@@ -213,7 +276,13 @@ def fetch_streak_by_name(entry_name):
             }
         }
     }
-    response = requests.post(url, headers=headers, json=payload)
+    response = requests.post(url, headers=headers, json=payload, timeout=20)
+    if response.status_code != 200:
+        try:
+            detail = response.json()
+        except Exception:
+            detail = response.text
+        raise RuntimeError(f"Notion rejected the streak lookup ({response.status_code}): {detail}")
     data = response.json()
     results = data.get("results", [])
     
@@ -408,6 +477,7 @@ background_label.place(relwidth=1, relheight=1)
 font_path = f"{base_dir}/../Text_Files/Press_Start_2P/PressStart2P-Regular.ttf"  # Path to your .ttf file
 retro_font = tkFont.Font(family="Press Start 2P", size=15)  # Load the font using Tkinter
 highest_entry_number = get_highest_entry_number()
+default_datetimes = build_default_datetime_strings()
 
 # Configure grid to be resizable
 for i in range(10):
@@ -421,12 +491,12 @@ entry_number_entry.grid(row=0, column=1, sticky="nsew")
 
 tk.Label(root, text="Wake Time (YYYY-MM-DDTHH:MM:SS)", font=retro_font, bg="black", fg="white").grid(row=1, column=0, sticky="nsew")
 wake_time_entry = tk.Entry(root, font=retro_font, bg="black", fg="white")
-wake_time_entry.insert(0, "2025-02-06T08:00:00")
+wake_time_entry.insert(0, default_datetimes["wake_time"])
 wake_time_entry.grid(row=1, column=1, sticky="nsew")
 
 tk.Label(root, text="Sleep Time (YYYY-MM-DDTHH:MM:SS)", font=retro_font, bg="black", fg="white").grid(row=2, column=0, sticky="nsew")
 sleep_time_entry = tk.Entry(root, font=retro_font, bg="black", fg="white")
-sleep_time_entry.insert(0, "2025-02-06T23:00:00")
+sleep_time_entry.insert(0, default_datetimes["sleep_time"])
 sleep_time_entry.grid(row=2, column=1, sticky="nsew")
 
 exercise_var = tk.StringVar(value="No")
@@ -453,7 +523,7 @@ social_media_entry.grid(row=6, column=1, sticky="nsew")
 
 tk.Label(root, text="Today's Date (YYYY-MM-DD)", font=retro_font, bg="black", fg="white").grid(row=7, column=0, sticky="nsew")
 todays_date_entry = tk.Entry(root, font=retro_font, bg="black", fg="white")
-todays_date_entry.insert(0, "2025-02-06")
+todays_date_entry.insert(0, default_datetimes["todays_date"])
 todays_date_entry.grid(row=7, column=1, sticky="nsew")
 
 tk.Label(root, text="Time Focused (minutes)", font=retro_font, bg="black", fg="white").grid(row=8, column=0, sticky="nsew")

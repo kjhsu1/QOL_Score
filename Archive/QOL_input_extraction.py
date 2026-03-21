@@ -4,7 +4,7 @@ import requests
 import json
 import sys
 
-NOTION_TOKEN = "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"
+NOTION_TOKEN = "YOUR_NOTION_TOKEN_HERE"
 DATABASE_ID = "1144d9b143a9800180f9d91c8934c2cb"  # Data Input for QOL Calculation
 DATABASE_2_ID = "0f0518e910de4ca8bf0bf67ddebeefe1"  # Awake Minutes
 DATABASE_3_ID = "112ce1b0de0c421cbe3fe424dd729799" # 4.1 Database (Efficiency)

@@ -15,17 +15,17 @@ import requests
 # includes "User Analysis Requests" database
 all_users = {
     "Kenta": {
-        "NOTION_TOKEN": "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",
+        "NOTION_TOKEN": "YOUR_NOTION_TOKEN_HERE",
         "DATABASE_ID": "1924d9b143a980719cabc4f151bc30fb"
     },
 
     "Kazuma":{
-        "NOTION_TOKEN": "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",
+        "NOTION_TOKEN": "YOUR_NOTION_TOKEN_HERE",
         "DATABASE_ID": "1954d9b143a981019212fbe32c21a6a1" 
     },
 
     "User_Analysis_Requests_Database":{
-        "NOTION_TOKEN": "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",
+        "NOTION_TOKEN": "YOUR_NOTION_TOKEN_HERE",
         "DATABASE_ID": "1ad4d9b143a980e7806ece9c6a0eb626"
     }
 
